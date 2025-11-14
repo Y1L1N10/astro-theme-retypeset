@@ -36,7 +36,8 @@ if (startDate) {
   const daysUntilSaturday = weekday === 6 ? 0 : (6 - weekday + 7) % 7
   start = addDays(customDate, daysUntilSaturday)
   days = 52 * 7 // 固定显示52周(一年)
-} else {
+}
+ else {
   // 默认模式：从今天对齐到周六后往前显示一年
   const weekday = getWeekday(now)
   // 如果今天是周六，就用今天；否则用上周六
@@ -74,7 +75,7 @@ heatmap.reverse()
 // 拆分成两个半年的热力图
 const halfPoint = Math.ceil(heatmap.length / 2)
 const firstHalf = heatmap.slice(0, halfPoint) // 前半年（较早）
-const secondHalf = heatmap.slice(halfPoint)   // 后半年（较新）
+const secondHalf = heatmap.slice(halfPoint) // 后半年（较新）
 
 // 生成文章链接
 function getPostUrl(post: typeof posts[0]): string {
@@ -101,7 +102,8 @@ function getPostUrl(post: typeof posts[0]): string {
             <i class={`heatmap-dot opacity-${opacity}`}></i>
             <div class="heatmap-tooltip">
               <time class="tooltip-date">{formatDate(day.date, locale)}</time>
-              {count > 0 ? (
+              {count > 0
+? (
                 <>
                   <p class="tooltip-count">文章 {count} 篇：</p>
                   <ul class="tooltip-list">
@@ -114,7 +116,8 @@ function getPostUrl(post: typeof posts[0]): string {
                     ))}
                   </ul>
                 </>
-              ) : (
+              )
+: (
                 <p class="tooltip-empty">无字</p>
               )}
             </div>
@@ -138,7 +141,8 @@ function getPostUrl(post: typeof posts[0]): string {
             <i class={`heatmap-dot opacity-${opacity}`}></i>
             <div class="heatmap-tooltip">
               <time class="tooltip-date">{formatDate(day.date, locale)}</time>
-              {count > 0 ? (
+              {count > 0
+? (
                 <>
                   <p class="tooltip-count">文章 {count} 篇：</p>
                   <ul class="tooltip-list">
@@ -151,7 +155,8 @@ function getPostUrl(post: typeof posts[0]): string {
                     ))}
                   </ul>
                 </>
-              ) : (
+              )
+: (
                 <p class="tooltip-empty">无字</p>
               )}
             </div>
@@ -320,7 +325,7 @@ window.addEventListener('resize', initTooltipPositioning)
     visibility: hidden;
     z-index: 10;
     transition: opacity 0.2s, visibility 0.2s;
-    pointer-events: none;
+    pointer-events: auto;
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
@@ -329,7 +334,8 @@ window.addEventListener('resize', initTooltipPositioning)
     border-color: rgba(255, 255, 255, 0.15);
   }
 
-  .heatmap-day:hover .heatmap-tooltip {
+  .heatmap-day:hover .heatmap-tooltip,
+  .heatmap-day:has(.heatmap-tooltip:hover) .heatmap-tooltip {
     opacity: 1;
     visibility: visible;
   }
