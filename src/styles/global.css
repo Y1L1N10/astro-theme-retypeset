@@ -3,6 +3,18 @@ html {
   scrollbar-width: thin;
   scrollbar-color: oklch(var(--un-preset-theme-colors-secondary) / 0.25) transparent;
   scrollbar-gutter: stable;
+
+  /* Heatmap colors - Light mode (GitHub style) */
+  --heatmap-empty: rgb(229, 228, 230);
+  --heatmap-low: rgb(208, 146, 126);
+  --heatmap-medium: #7bc96f;
+  --heatmap-high: #239a3b;
+
+  /* Heatmap colors - Dark mode (GitHub style) */
+  --heatmap-empty-dark: rgb(170, 169, 170);
+  --heatmap-low-dark: rgb(182, 112, 89);
+  --heatmap-medium-dark: #26a641;
+  --heatmap-high-dark: #39d353;
 }
 
 /* Fix Flash Issue On iOS */

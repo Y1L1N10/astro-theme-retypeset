@@ -1,0 +1,373 @@
+---
+/**
+ * 简化版热力图组件 - 纯 Astro 实现
+ * 不依赖 Svelte，不需要客户端 JS
+ */
+import { getPostPath } from '@/i18n/path'
+import { addDays, diffDays, formatDate, getWeekday, subtractDays } from '@/utils/time-simple'
+
+interface Props {
+  posts: Array<{
+    id: string
+    data: {
+      title: string
+      published: Date
+      abbrlink?: string
+      [key: string]: any
+    }
+  }>
+  locale?: string
+  lang?: string
+  startDate?: string // 可选：指定开始日期 (YYYY-MM-DD)
+}
+
+const { posts, locale = 'zh-CN', lang = '', startDate } = Astro.props
+const now = new Date()
+
+// 确定起始日期和天数
+let start: Date
+let days: number
+
+if (startDate) {
+  // 自定义模式：从指定日期对齐到周六后往前显示一年
+  const customDate = new Date(startDate)
+  const weekday = getWeekday(customDate)
+  // 如果不是周六，找到这周或下周的周六
+  const daysUntilSaturday = weekday === 6 ? 0 : (6 - weekday + 7) % 7
+  start = addDays(customDate, daysUntilSaturday)
+  days = 52 * 7 // 固定显示52周(一年)
+} else {
+  // 默认模式：从今天对齐到周六后往前显示一年
+  const weekday = getWeekday(now)
+  // 如果今天是周六，就用今天；否则用上周六
+  const daysToLastSaturday = weekday === 6 ? 0 : weekday + 1
+  start = subtractDays(now, daysToLastSaturday)
+  days = 52 * 7 // 固定显示52周(一年)
+}
+
+// 创建热力图数据结构
+type HeatmapDay = {
+  date: Date
+  posts: typeof posts
+}
+
+const heatmap: HeatmapDay[] = Array.from({ length: days }, (_, day) => ({
+  date: subtractDays(start, day),
+  posts: [],
+}))
+
+// 填充文章数据
+for (const post of posts) {
+  const postDate = post.data.published
+  if (!postDate)
+    continue
+
+  const gap = diffDays(start, postDate)
+  if (gap >= 0 && gap < days) {
+    heatmap[gap].posts.push(post)
+  }
+}
+
+// 反转数组，让最新的在右边
+heatmap.reverse()
+
+// 拆分成两个半年的热力图
+const halfPoint = Math.ceil(heatmap.length / 2)
+const firstHalf = heatmap.slice(0, halfPoint) // 前半年（较早）
+const secondHalf = heatmap.slice(halfPoint)   // 后半年（较新）
+
+// 生成文章链接
+function getPostUrl(post: typeof posts[0]): string {
+  // 使用 abbrlink 或 id 作为 slug
+  const slug = post.data.abbrlink || post.id
+  return getPostPath(slug, lang)
+}
+
+// 无需单独的渲染函数，直接在模板中使用
+---
+
+<div class="heatmap-wrapper">
+  <!-- 后半年（较新的数据） -->
+  <div class="heatmap-section">
+    <div class="heatmap-grid">
+      {secondHalf.map((day, index) => {
+        const count = day.posts.length
+        const opacity = count > 2 ? '100' : count > 1 ? '70' : count > 0 ? '40' : '10'
+        const globalIndex = halfPoint + index
+        const col = Math.floor(globalIndex / 7)
+        const row = globalIndex % 7
+        return (
+          <div class="heatmap-day" data-col={col} data-row={row}>
+            <i class={`heatmap-dot opacity-${opacity}`}></i>
+            <div class="heatmap-tooltip">
+              <time class="tooltip-date">{formatDate(day.date, locale)}</time>
+              {count > 0 ? (
+                <>
+                  <p class="tooltip-count">文章 {count} 篇：</p>
+                  <ul class="tooltip-list">
+                    {day.posts.map((post: typeof posts[0]) => (
+                      <li>
+                        <a href={getPostUrl(post)} class="tooltip-link">
+                          {post.data.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <p class="tooltip-empty">无字</p>
+              )}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  </div>
+
+  <!-- 前半年（较早的数据） -->
+  <div class="heatmap-section">
+    <div class="heatmap-grid">
+      {firstHalf.map((day, index) => {
+        const count = day.posts.length
+        const opacity = count > 2 ? '100' : count > 1 ? '70' : count > 0 ? '40' : '10'
+        const globalIndex = 0 + index
+        const col = Math.floor(globalIndex / 7)
+        const row = globalIndex % 7
+        return (
+          <div class="heatmap-day" data-col={col} data-row={row}>
+            <i class={`heatmap-dot opacity-${opacity}`}></i>
+            <div class="heatmap-tooltip">
+              <time class="tooltip-date">{formatDate(day.date, locale)}</time>
+              {count > 0 ? (
+                <>
+                  <p class="tooltip-count">文章 {count} 篇：</p>
+                  <ul class="tooltip-list">
+                    {day.posts.map((post: typeof posts[0]) => (
+                      <li>
+                        <a href={getPostUrl(post)} class="tooltip-link">
+                          {post.data.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <p class="tooltip-empty">无字</p>
+              )}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  </div>
+</div>
+
+<script>
+// 动态调整 tooltip 位置，避免被遮挡
+function initTooltipPositioning() {
+  const wrapper = document.querySelector('.heatmap-wrapper') as HTMLElement | null
+  if (!wrapper)
+    return
+
+  const days = wrapper.querySelectorAll('.heatmap-day')
+
+  days.forEach((day) => {
+    const tooltip = day.querySelector('.heatmap-tooltip') as HTMLElement | null
+    if (!tooltip)
+      return
+
+    day.addEventListener('mouseenter', () => {
+      // 重置偏移
+      tooltip.style.removeProperty('--tooltip-offset-x')
+
+      const dayRect = day.getBoundingClientRect()
+
+      // 获取视口宽度
+      const viewportWidth = window.innerWidth
+
+      // 先让 tooltip 显示以获取宽度
+      tooltip.style.opacity = '0'
+      tooltip.style.visibility = 'visible'
+      const tooltipRect = tooltip.getBoundingClientRect()
+      tooltip.style.opacity = ''
+      tooltip.style.visibility = ''
+
+      const tooltipHalfWidth = tooltipRect.width / 2
+      const dayCenter = dayRect.left + dayRect.width / 2
+
+      // 计算 tooltip 居中后的左右边界
+      const tooltipLeft = dayCenter - tooltipHalfWidth
+      const tooltipRight = dayCenter + tooltipHalfWidth
+
+      // 如果会超出左边界，向右调整
+      if (tooltipLeft < 0) {
+        const offset = -tooltipLeft + 10 // 10px 额外边距
+        tooltip.style.setProperty('--tooltip-offset-x', `${offset}px`)
+      }
+      // 如果会超出右边界，向左调整
+      else if (tooltipRight > viewportWidth) {
+        const offset = viewportWidth - tooltipRight - 10
+        tooltip.style.setProperty('--tooltip-offset-x', `${offset}px`)
+      }
+    })
+  })
+}
+
+// 初始化
+initTooltipPositioning()
+
+// 处理动态内容加载和窗口大小变化
+document.addEventListener('astro:page-load', initTooltipPositioning)
+window.addEventListener('resize', initTooltipPositioning)
+</script>
+
+<style>
+  /* 外层容器 */
+  .heatmap-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    width: 100%;
+    margin-top: 2rem;
+    margin-bottom: 0;
+  }
+
+  /* 单个热力图段 */
+  .heatmap-section {
+    display: block;
+    width: 100%;
+    overflow: visible;
+  }
+
+  .heatmap-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-rows: repeat(7, 1fr);
+    gap: 0.25rem;
+    width: fit-content;
+    padding-bottom: 0.5rem;
+  }
+
+  .heatmap-day {
+    position: relative;
+  }
+
+  .heatmap-dot {
+    display: block;
+    width: 0.625rem;
+    height: 0.625rem;
+    background-color: var(--heatmap-empty, #ebedf0);
+    border-radius: 2px;
+    transition: background-color 0.2s ease;
+  }
+
+  /* GitHub style colors - Light mode */
+  .opacity-100 {
+    background-color: var(--heatmap-high, #239a3b);
+  }
+
+  .opacity-70 {
+    background-color: var(--heatmap-medium, #7bc96f);
+  }
+
+  .opacity-40 {
+    background-color: var(--heatmap-low, #c6e48b);
+  }
+
+  .opacity-10 {
+    background-color: var(--heatmap-empty, #ebedf0);
+  }
+
+  /* Dark mode colors */
+  html.dark .heatmap-dot {
+    background-color: var(--heatmap-empty-dark, #161b22);
+  }
+
+  html.dark .opacity-100 {
+    background-color: var(--heatmap-high-dark, #39d353);
+  }
+
+  html.dark .opacity-70 {
+    background-color: var(--heatmap-medium-dark, #26a641);
+  }
+
+  html.dark .opacity-40 {
+    background-color: var(--heatmap-low-dark, #0e4429);
+  }
+
+  html.dark .opacity-10 {
+    background-color: var(--heatmap-empty-dark, #161b22);
+  }
+
+  .heatmap-tooltip {
+    --tooltip-offset-x: 0px;
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(calc(-50% + var(--tooltip-offset-x)));
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.5rem;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    width: max-content;
+    max-width: 250px;
+    color: #fff;
+    background-color: rgba(9, 9, 9, 0.8);
+    opacity: 0;
+    visibility: hidden;
+    z-index: 10;
+    transition: opacity 0.2s, visibility 0.2s;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  html.dark .heatmap-tooltip {
+    background-color: rgba(30, 30, 30, 0.9);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .heatmap-day:hover .heatmap-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .tooltip-date {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+  }
+
+  .tooltip-count {
+    margin: 0.25rem 0;
+  }
+
+  .tooltip-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tooltip-list li {
+    margin-left: 0.25rem;
+  }
+
+  .tooltip-link {
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.15em;
+    transition: text-decoration-color 0.2s;
+  }
+
+  .tooltip-link:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .tooltip-empty {
+    margin-top: 0.25rem;
+  }
+</style>

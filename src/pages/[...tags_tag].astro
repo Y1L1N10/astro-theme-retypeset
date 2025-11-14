@@ -3,7 +3,7 @@ import PostList from '@/components/PostList.astro'
 import TagList from '@/components/TagList.astro'
 import { defaultLocale, moreLocales } from '@/config'
 import Layout from '@/layouts/Layout.astro'
-import { getAllTags, getPostsByTag, getTagSupportedLangs } from '@/utils/content'
+import { getAllTags, getPosts, getPostsByTag, getTagSupportedLangs } from '@/utils/content'
 
 export async function getStaticPaths() {
   type PathItem = {
@@ -40,9 +40,11 @@ const { tag, lang } = Astro.props
 const posts = await getPostsByTag(tag, lang)
 const allTags = await getAllTags(lang)
 const supportedLangs = await getTagSupportedLangs(tag)
+// 获取所有文章用于热力图
+const allPosts = await getPosts(lang)
 ---
 
-<Layout supportedLangs={supportedLangs}>
+<Layout supportedLangs={supportedLangs} posts={allPosts} showHeatmap={true}>
   <!-- Decorative Line -->
   <div class="uno-decorative-line" />
   <!-- Tag List -->

@@ -2,7 +2,14 @@
 import themeConfig from '@/config'
 import { ui } from '@/i18n/ui'
 import { getPageInfo } from '@/utils/page'
+import HeatmapSimple from '@/components/HeatmapSimple.astro'
 
+interface Props {
+  posts?: Array<any>;
+  showHeatmap?: boolean;
+}
+
+const { posts = [], showHeatmap = false } = Astro.props;
 const { currentLang, getLocalizedPath, isPost } = getPageInfo(Astro.url.pathname)
 const { title, subtitle, i18nTitle } = themeConfig.site
 
@@ -18,7 +25,7 @@ const SubtitleTag = isPost ? 'div' : 'h2'
   class:list={[
     isPost
     ? 'mb-10.8'
-    : 'mb-10.5',
+    : showHeatmap ? 'mb-8.5' : 'mb-10.5',
     'lg:(uno-desktop-column top-20) cjk:tracking-0.02em',
   ]}
 >
@@ -57,5 +64,15 @@ const SubtitleTag = isPost ? 'div' : 'h2'
     >
       {headerSubtitle}
     </SubtitleTag>
+  )}
+
+  {showHeatmap && !isPost && posts.length > 0 && (
+    <div class="heatmap-wrapper">
+      <HeatmapSimple
+        posts={posts}
+        locale={currentLang}
+        lang={currentLang}
+      />
+    </div>
   )}
 </header>

@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content'
 import { defaultLocale, moreLocales } from '@/config'
 import Layout from '@/layouts/Layout.astro'
+import { getPosts } from '@/utils/content'
 
 export async function getStaticPaths() {
   type PathItem = {
@@ -35,9 +36,12 @@ const allAboutEntries = await getCollection('about')
 const aboutEntry = allAboutEntries.find(entry => entry.data.lang === lang)
   ?? allAboutEntries.find(entry => entry.data.lang === '')
 const { Content } = aboutEntry ? await render(aboutEntry) : { Content: null }
+
+// 获取所有文章用于热力图
+const allPosts = await getPosts(lang)
 ---
 
-<Layout>
+<Layout posts={allPosts} showHeatmap={true}>
   <!-- Decorative Line -->
   <div class="uno-decorative-line" />
   <!-- About Page Content -->
