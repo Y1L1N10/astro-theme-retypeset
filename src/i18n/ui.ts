@@ -6,6 +6,7 @@ export const ui = {
     posts: 'Beiträge',
     tags: 'Schlagwörter',
     about: 'Über',
+    projects: 'Projekte',
     toc: 'Inhaltsverzeichnis',
   },
   'en': {
@@ -15,6 +16,7 @@ export const ui = {
     posts: 'Posts',
     tags: 'Tags',
     about: 'About',
+    projects: 'Projects',
     toc: 'Table of Contents',
   },
   'es': {
@@ -24,6 +26,7 @@ export const ui = {
     posts: 'Artículos',
     tags: 'Etiquetas',
     about: 'Sobre',
+    projects: 'Proyectos',
     toc: 'Índice',
   },
   'fr': {
@@ -33,6 +36,7 @@ export const ui = {
     posts: 'Articles',
     tags: 'Étiquettes',
     about: 'À propos',
+    projects: 'Projets',
     toc: 'Table des matières',
   },
   'ja': {
@@ -42,6 +46,7 @@ export const ui = {
     posts: '記事',
     tags: 'タグ',
     about: '概要',
+    projects: 'プロジェクト',
     toc: '目次',
   },
   'ko': {
@@ -51,6 +56,7 @@ export const ui = {
     posts: '게시물',
     tags: '태그',
     about: '소개',
+    projects: '프로젝트',
     toc: '목차',
   },
   'pl': {
@@ -60,6 +66,7 @@ export const ui = {
     posts: 'Artykuły',
     tags: 'Tagi',
     about: 'O stronie',
+    projects: 'Projekty',
     toc: 'Spis treści',
   },
   'pt': {
@@ -69,6 +76,7 @@ export const ui = {
     posts: 'Artigos',
     tags: 'Tags',
     about: 'Sobre',
+    projects: 'Projetos',
     toc: 'Sumário',
   },
   'ru': {
@@ -78,15 +86,17 @@ export const ui = {
     posts: 'Посты',
     tags: 'Теги',
     about: 'О себе',
+    projects: 'Проекты',
     toc: 'Оглавление',
   },
   'zh': {
-    title: '重新编排',
-    subtitle: '再现版式之美',
+    title: '独木冠林🌲',
+    subtitle: '一个努力的‘空心人’',
     description: 'Retypeset是一款基于Astro框架的静态博客主题，中文名为重新编排。本主题以活版印字为设计灵感，通过建立全新的视觉规范，对所有页面进行重新编排，打造纸质书页般的阅读体验，再现版式之美。所见皆为细节，方寸尽显优雅。',
     posts: '文章',
     tags: '标签',
-    about: '关于',
+    about: '关于我',
+    projects: '项目',
     toc: '目录',
   },
   'zh-tw': {
@@ -96,6 +106,7 @@ export const ui = {
     posts: '文章',
     tags: '標籤',
     about: '關於',
+    projects: '項目',
     toc: '目錄',
   },
 }
