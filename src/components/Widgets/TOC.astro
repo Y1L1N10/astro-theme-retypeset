@@ -34,7 +34,7 @@ const filteredHeadings = headings.filter(heading =>
     <div class="relative h-12 w-full xl:hidden">
       <label
         for="toc-toggle"
-        class="absolute inset-0 flex cursor-pointer items-center xl:(static flex c-secondary/40 transition-colors ease-out hover:c-secondary/80)"
+        class="absolute inset-0 flex cursor-pointer items-center xl:(static flex c-secondary/60 transition-colors ease-out hover:c-primary)"
       >
         {/* Title on Mobile */}
         <span id="toc-mobile-text">
@@ -45,6 +45,7 @@ const filteredHeadings = headings.filter(heading =>
         <TocIcon
           id="toc-desktop-icon"
           aria-hidden="true"
+          title={currentUI.toc || 'Table of Contents'}
           class="ml-4 hidden aspect-square w-4.2 xl:(mt-4 block origin-center active:scale-90!)"
           fill="currentColor"
         />
