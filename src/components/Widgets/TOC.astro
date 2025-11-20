@@ -22,7 +22,7 @@ const filteredHeadings = headings.filter(heading =>
   // TOC Container
   <div
     id="toc-container"
-    class="mb-6 uno-round-border bg-secondary/5 xl:(fixed left-0 top-44.5 max-w-[min(calc(50vw-28rem),13rem)] border-none bg-secondary/0)"
+    class="mb-6 uno-round-border bg-secondary/5 xl:(fixed left-0 top-24 max-w-[min(calc(50vw-28rem),13rem)] border-none bg-secondary/0)"
   >
     {/* Hidden Checkbox */}
     <input
@@ -31,7 +31,7 @@ const filteredHeadings = headings.filter(heading =>
       hidden
     />
     {/* TOC Toggle */}
-    <div class="relative h-12 w-full">
+    <div class="relative h-12 w-full xl:hidden">
       <label
         for="toc-toggle"
         class="absolute inset-0 flex cursor-pointer items-center xl:(static flex c-secondary/40 transition-colors ease-out hover:c-secondary/80)"
@@ -111,10 +111,10 @@ const filteredHeadings = headings.filter(heading =>
 
 /* Overflow and Scrollbar */
 #toc-toggle:checked ~ #toc-accordion-wrapper #toc-accordion-content {
-  --at-apply: 'overflow-y-auto xl:overflow-hidden';
+  --at-apply: 'overflow-hidden';
 }
 #toc-accordion-content {
-  --at-apply: 'max-h-59.3 overflow-hidden pl-4 pr-6 xl:(max-h-[calc(100vh-26.75rem)] overflow-y-auto scrollbar-hidden)';
+  --at-apply: 'max-h-59.3 overflow-y-auto pl-4 pr-6 xl:(max-h-[calc(100vh-8rem)] scrollbar-hidden)';
   scrollbar-width: thin;
   scrollbar-color: oklch(var(--un-preset-theme-colors-secondary) / 0.15) transparent;
 }
@@ -122,21 +122,14 @@ const filteredHeadings = headings.filter(heading =>
   --at-apply: 'hidden';
 }
 
-/* Mobile Initial State */
+/* Initial State (Default Open for All) */
 #toc-accordion-wrapper {
-  --at-apply: 'grid rows-[0fr]';
+  --at-apply: 'grid rows-[1fr]';
   transition: grid-template-rows 0.3s ease-in-out;
 }
+/* Toggled State (Closed) */
 #toc-toggle:checked ~ #toc-accordion-wrapper {
-  --at-apply: 'rows-[1fr]';
-}
-
-/* Desktop Initial State */
-#toc-accordion-wrapper {
-  --at-apply: 'xl:rows-[1fr]';';
-}
-#toc-toggle:checked ~ #toc-accordion-wrapper {
-  --at-apply: 'xl:rows-[0fr]';
+  --at-apply: 'rows-[0fr]';
 }
 </style>
 
