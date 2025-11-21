@@ -40,8 +40,9 @@
         stroke-linejoin="round"
         class="icon-close h-5 w-5"
       >
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
+        <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+        <line x1="9" y1="3" x2="9" y2="21" />
+        <path d="m14 15-3-3 3-3" />
       </svg>
     </div>
     <span class="tooltip">Contents</span>
@@ -98,33 +99,7 @@
     <span class="tooltip">Comment</span>
   </button>
 
-  <!-- Back to Top Button -->
-  <button
-    id="action-top"
-    class="action-btn group"
-    aria-label="Back to top"
-  >
-    <div class="icon-container">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="icon-default h-5 w-5"
-      >
-        <line x1="12" y1="19" x2="12" y2="5" />
-        <polyline points="5 12 12 5 19 12" />
-      </svg>
-    </div>
-    <span class="tooltip">Top</span>
-  </button>
-
-   <!-- Share Button -->
+  <!-- Share Button -->
   <button
     id="action-share"
     class="action-btn group"
@@ -165,6 +140,65 @@
       </svg>
     </div>
     <span class="tooltip">Share</span>
+  </button>
+
+  <!-- Back to Top Button -->
+  <button
+    id="action-top"
+    class="action-btn group invisible relative opacity-0"
+    aria-label="Back to top"
+  >
+    <!-- Progress Ring -->
+    <svg class="absolute inset-0 h-full w-full transform p-0.5 -rotate-90" viewBox="0 0 40 40">
+      <circle
+        class="text-transparent"
+        stroke="currentColor"
+        stroke-width="2"
+        fill="transparent"
+        r="18"
+        cx="20"
+        cy="20"
+      ></circle>
+      <circle
+        class="progress-ring-circle text-primary transition-all duration-100 ease-out"
+        stroke="currentColor"
+        stroke-width="2"
+        fill="transparent"
+        r="18"
+        cx="20"
+        cy="20"
+        stroke-dasharray="113.1"
+        stroke-dashoffset="113.1"
+        stroke-linecap="round"
+      ></circle>
+    </svg>
+
+    <!-- Percentage Text -->
+    <span class="progress-text absolute inset-0 flex items-center justify-center text-[0.7rem] text-primary/80 font-bold leading-none transition-opacity duration-300 group-hover:opacity-0">
+      0
+    </span>
+
+    <!-- Icon (Hidden by default, visible on hover) -->
+    <div class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+      <div class="icon-container">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="icon-default h-5 w-5"
+        >
+          <line x1="12" y1="19" x2="12" y2="5" />
+          <polyline points="5 12 12 5 19 12" />
+        </svg>
+      </div>
+    </div>
+    <span class="tooltip">Top</span>
   </button>
 </div>
 
@@ -244,10 +278,10 @@
   .action-btn.success .icon-success { --at-apply: 'opacity-100 rotate-0 scale-100'; }
 
   /* TOC Icons */
-  .icon-list { --at-apply: 'opacity-100 rotate-0 scale-100'; }
-  .icon-close { --at-apply: 'opacity-0 -rotate-90 scale-50'; }
-  .action-btn.active .icon-list { --at-apply: 'opacity-0 rotate-90 scale-50'; }
-  .action-btn.active .icon-close { --at-apply: 'opacity-100 rotate-0 scale-100'; }
+  .icon-list { --at-apply: 'opacity-100 scale-100'; }
+  .icon-close { --at-apply: 'opacity-0 scale-50'; }
+  .action-btn.active .icon-list { --at-apply: 'opacity-0 scale-50'; }
+  .action-btn.active .icon-close { --at-apply: 'opacity-100 scale-100'; }
 
   .tooltip {
     position: absolute;
@@ -373,14 +407,56 @@
      })
    }
 
-   // Top
+   // Top & Progress
    const topBtn = document.getElementById('action-top')
-   topBtn?.addEventListener('click', () => {
-     window.scrollTo({ top: 0, behavior: 'smooth' })
-     animateBtn(topBtn, 'animate-jump')
-   })
+   const progressCircle = topBtn?.querySelector('.progress-ring-circle') as SVGCircleElement | null
+   const progressText = topBtn?.querySelector('.progress-text')
+
+   if (topBtn && progressCircle && progressText) {
+     const radius = progressCircle.r.baseVal.value
+     const circumference = radius * 2 * Math.PI
+
+     progressCircle.style.strokeDasharray = `${circumference} ${circumference}`
+     progressCircle.style.strokeDashoffset = `${circumference}`
+
+     const setProgress = (percent: number) => {
+       const offset = circumference - (percent / 100) * circumference
+       progressCircle.style.strokeDashoffset = `${offset}`
+       progressText.textContent = `${Math.round(percent)}`
+     }
+
+     const onScroll = () => {
+       const scrollTop = window.scrollY
+       const docHeight = document.documentElement.scrollHeight - window.innerHeight
+       const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0
+       const safePercent = Math.min(100, Math.max(0, scrollPercent))
+       setProgress(safePercent)
+
+       // Toggle visibility based on scroll position
+       if (scrollTop > 0) {
+         topBtn.classList.remove('opacity-0', 'invisible')
+       }
+ else {
+         topBtn.classList.add('opacity-0', 'invisible')
+       }
+     }
+
+     window.addEventListener('scroll', onScroll, { passive: true })
+     onScroll()
+
+     // Cleanup
+     document.addEventListener('astro:before-swap', () => {
+       window.removeEventListener('scroll', onScroll)
+     }, { once: true })
+
+     topBtn.addEventListener('click', () => {
+       window.scrollTo({ top: 0, behavior: 'smooth' })
+       animateBtn(topBtn, 'animate-jump')
+     })
+   }
  }
 
  document.addEventListener('astro:page-load', setupPostActions)
  setupPostActions()
 </script>
+```
