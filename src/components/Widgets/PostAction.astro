@@ -1,0 +1,386 @@
+---
+---
+
+<div
+  id="post-action-sidebar"
+  class="fixed left-[calc(50vw-38.5rem)] top-1/2 z-10 hidden flex-col gap-4 xl:flex -translate-y-1/2"
+> <!-- TOC Toggle Button -->
+  <button
+    id="action-toc"
+    class="action-btn group"
+    aria-label="Toggle Table of Contents"
+  >
+    <div class="icon-container">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="icon-list h-5 w-5"
+      >
+        <line x1="21" y1="10" x2="3" y2="10" />
+        <line x1="21" y1="6" x2="3" y2="6" />
+        <line x1="21" y1="14" x2="3" y2="14" />
+        <line x1="21" y1="18" x2="3" y2="18" />
+      </svg>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="icon-close h-5 w-5"
+      >
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </div>
+    <span class="tooltip">Contents</span>
+  </button>
+
+  <!-- Tags Button -->
+  <button
+    id="action-tags"
+    class="action-btn group"
+    aria-label="Jump to tags"
+  >
+    <div class="icon-container">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="icon-default h-5 w-5"
+      >
+        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+        <line x1="7" y1="7" x2="7.01" y2="7" />
+      </svg>
+    </div>
+    <span class="tooltip">Tags</span>
+  </button>
+
+  <!-- Comment Button -->
+  <button
+    id="action-comment"
+    class="action-btn group"
+    aria-label="Jump to comments"
+  >
+    <div class="icon-container">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="icon-default h-5 w-5"
+      >
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+      </svg>
+    </div>
+    <span class="tooltip">Comment</span>
+  </button>
+
+  <!-- Back to Top Button -->
+  <button
+    id="action-top"
+    class="action-btn group"
+    aria-label="Back to top"
+  >
+    <div class="icon-container">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="icon-default h-5 w-5"
+      >
+        <line x1="12" y1="19" x2="12" y2="5" />
+        <polyline points="5 12 12 5 19 12" />
+      </svg>
+    </div>
+    <span class="tooltip">Top</span>
+  </button>
+
+   <!-- Share Button -->
+  <button
+    id="action-share"
+    class="action-btn group"
+    aria-label="Share this post"
+  >
+    <div class="icon-container">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="icon-original h-5 w-5"
+      >
+        <circle cx="18" cy="5" r="3" />
+        <circle cx="6" cy="12" r="3" />
+        <circle cx="18" cy="19" r="3" />
+        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+      </svg>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="icon-success h-5 w-5"
+      >
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </div>
+    <span class="tooltip">Share</span>
+  </button>
+</div>
+
+<style>
+  .action-btn {
+    --at-apply: 'flex items-center justify-center w-10 h-10 rounded-full bg-secondary/5 text-secondary/60 hover:bg-primary/10 hover:text-primary transition-all duration-300 relative active:scale-90';
+  }
+
+  .action-btn::after {
+    content: '';
+    --at-apply: 'absolute inset-0 rounded-full border border-primary opacity-0 scale-100 pointer-events-none';
+    transition: all 0.4s ease-out;
+  }
+
+  /* Share Button Success State */
+  .action-btn.success {
+    --at-apply: 'text-primary bg-primary/10';
+  }
+  .action-btn.success::after {
+    --at-apply: 'opacity-0 scale-150';
+    animation: ripple 0.6s ease-out;
+  }
+
+  /* TOC Button Active State */
+  .action-btn.active {
+    --at-apply: 'text-primary bg-primary/10';
+  }
+
+  @keyframes ripple {
+    0% { opacity: 0.6; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.6); }
+  }
+
+  /* Animations for other buttons */
+  .animate-jump .icon-default {
+    animation: jump-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .animate-shake .icon-default {
+    animation: shake 0.5s ease-in-out;
+  }
+  .animate-pulse .icon-default {
+    animation: pulse-scale 0.4s ease-out;
+  }
+
+  @keyframes jump-up {
+    0% { transform: translateY(0); }
+    40% { transform: translateY(-50%); opacity: 0; }
+    41% { transform: translateY(50%); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: rotate(0); }
+    25% { transform: rotate(-15deg); }
+    75% { transform: rotate(15deg); }
+  }
+
+  @keyframes pulse-scale {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+
+  .icon-container {
+    --at-apply: 'relative w-5 h-5';
+  }
+
+  /* Generic Transition */
+  .icon-original, .icon-success, .icon-list, .icon-close, .icon-default {
+    --at-apply: 'absolute inset-0 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]';
+  }
+
+  /* Share Icons */
+  .icon-original { --at-apply: 'opacity-100 rotate-0 scale-100'; }
+  .icon-success { --at-apply: 'opacity-0 rotate-90 scale-50'; }
+  .action-btn.success .icon-original { --at-apply: 'opacity-0 -rotate-90 scale-50'; }
+  .action-btn.success .icon-success { --at-apply: 'opacity-100 rotate-0 scale-100'; }
+
+  /* TOC Icons */
+  .icon-list { --at-apply: 'opacity-100 rotate-0 scale-100'; }
+  .icon-close { --at-apply: 'opacity-0 -rotate-90 scale-50'; }
+  .action-btn.active .icon-list { --at-apply: 'opacity-0 rotate-90 scale-50'; }
+  .action-btn.active .icon-close { --at-apply: 'opacity-100 rotate-0 scale-100'; }
+
+  .tooltip {
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%) translateX(0.25rem);
+    margin-left: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 20;
+    opacity: 0;
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+
+    /* Light mode styling */
+    background: oklch(var(--un-preset-theme-colors-secondary) / 0.95);
+    color: white;
+    border-radius: 0.375rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Tooltip arrow */
+  .tooltip::before {
+    content: '';
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0.25rem solid transparent;
+    border-right-color: oklch(var(--un-preset-theme-colors-secondary) / 0.95);
+  }
+
+  /* Hover state */
+  .action-btn:hover .tooltip {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0.5rem);
+  }
+
+  /* Dark mode adjustments */
+  @media (prefers-color-scheme: dark) {
+    .tooltip {
+      background: oklch(var(--un-preset-theme-colors-primary-content) / 0.95);
+      color: oklch(var(--un-preset-theme-colors-primary));
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .tooltip::before {
+      border-right-color: oklch(var(--un-preset-theme-colors-primary-content) / 0.95);
+    }
+  }
+</style>
+
+<script>
+ function setupPostActions() {
+   const showSuccess = (btn: HTMLElement) => {
+     btn.classList.add('success')
+     setTimeout(() => {
+       btn.classList.remove('success')
+     }, 2000)
+   }
+
+   const animateBtn = (btn: HTMLElement, animationClass: string) => {
+     btn.classList.add(animationClass)
+     btn.classList.add('success') // Trigger ripple
+     setTimeout(() => {
+       btn.classList.remove(animationClass)
+       btn.classList.remove('success')
+     }, 1000)
+   }
+
+   // Share
+   const shareBtn = document.getElementById('action-share')
+   shareBtn?.addEventListener('click', async () => {
+     try {
+       await navigator.clipboard.writeText(window.location.href)
+       showSuccess(shareBtn)
+     }
+ catch (err) {
+       console.error('Failed to copy:', err)
+     }
+   })
+
+   // Tags
+   const tagsBtn = document.getElementById('action-tags')
+   tagsBtn?.addEventListener('click', () => {
+     document.getElementById('post-tags')?.scrollIntoView({ behavior: 'smooth' })
+     animateBtn(tagsBtn, 'animate-shake')
+   })
+
+   // Comment
+   const commentBtn = document.getElementById('action-comment')
+   commentBtn?.addEventListener('click', () => {
+     document.getElementById('post-comment')?.scrollIntoView({ behavior: 'smooth' })
+     animateBtn(commentBtn, 'animate-pulse')
+   })
+
+   // TOC Toggle
+   const tocBtn = document.getElementById('action-toc')
+   const tocToggle = document.getElementById('toc-toggle') as HTMLInputElement | null
+
+   // Initialize TOC state based on checkbox (default open on desktop means checkbox unchecked)
+   // If checkbox is checked -> TOC is closed -> Button should show List (inactive)
+   // If checkbox is unchecked -> TOC is open -> Button should show Close (active)
+   if (tocBtn && tocToggle) {
+     const updateTOCState = () => {
+       if (!tocToggle.checked) {
+         tocBtn.classList.add('active') // Open = Active (Show Close Icon)
+       }
+ else {
+         tocBtn.classList.remove('active') // Closed = Inactive (Show List Icon)
+       }
+     }
+
+     // Initial state
+     updateTOCState()
+
+     tocBtn.addEventListener('click', () => {
+       tocToggle.checked = !tocToggle.checked
+       tocToggle.dispatchEvent(new Event('change'))
+       updateTOCState()
+     })
+   }
+
+   // Top
+   const topBtn = document.getElementById('action-top')
+   topBtn?.addEventListener('click', () => {
+     window.scrollTo({ top: 0, behavior: 'smooth' })
+     animateBtn(topBtn, 'animate-jump')
+   })
+ }
+
+ document.addEventListener('astro:page-load', setupPostActions)
+ setupPostActions()
+</script>

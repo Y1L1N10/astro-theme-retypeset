@@ -22,7 +22,7 @@ const filteredHeadings = headings.filter(heading =>
   // TOC Container
   <div
     id="toc-container"
-    class="mb-6 uno-round-border bg-secondary/5 2xl:(fixed left-0 top-44.5 max-w-[min(calc(50vw-38rem),13rem)] border-none bg-secondary/0)"
+    class="mb-6 uno-round-border bg-secondary/5 xl:(fixed left-0 top-24 max-w-[min(calc(50vw-28rem),13rem)] border-none bg-secondary/0)"
   >
     {/* Hidden Checkbox */}
     <input
@@ -31,10 +31,11 @@ const filteredHeadings = headings.filter(heading =>
       hidden
     />
     {/* TOC Toggle */}
-    <div class="relative h-12 w-full">
+    <div class="relative h-12 w-full xl:hidden">
       <label
         for="toc-toggle"
-        class="absolute inset-0 flex cursor-pointer items-center 2xl:(static flex c-secondary/40 transition-colors ease-out hover:c-secondary/80)"
+        class="absolute inset-0 flex cursor-pointer items-center xl:(static flex c-secondary/60 transition-colors ease-out hover:c-primary)"
+        title={currentUI.toc || 'Table of Contents'}
       >
         {/* Title on Mobile */}
         <span id="toc-mobile-text">
@@ -45,7 +46,7 @@ const filteredHeadings = headings.filter(heading =>
         <TocIcon
           id="toc-desktop-icon"
           aria-hidden="true"
-          class="ml-4 hidden aspect-square w-4.2 2xl:(mt-4 block origin-center active:scale-90!)"
+          class="ml-4 hidden aspect-square w-4.2 xl:(mt-4 block origin-center active:scale-90!)"
           fill="currentColor"
         />
       </label>
@@ -88,13 +89,13 @@ const filteredHeadings = headings.filter(heading =>
 <!-- Override heti default styles  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> -->
 <style>
 #toc-mobile-text {
-  --at-apply: 'ml-4 font-semibold 2xl:hidden';
+  --at-apply: 'ml-4 font-semibold xl:hidden';
 }
 #toc-links-list {
-  --at-apply: 'mb-2.5 mt-1 list-none pl-0 2xl:(mb-1 space-y-1) space-y-1.1';
+  --at-apply: 'mb-2.5 mt-1 list-none pl-0 xl:(mb-1 space-y-1) space-y-1.1';
 }
 .toc-links-h2, .toc-links-h3, .toc-links-h4 {
-  --at-apply: 'text-balance text-sm font-normal no-underline after:bottom-0.15em 2xl:(text-3.2 c-secondary/25)';
+  --at-apply: 'text-balance text-sm font-normal no-underline after:bottom-0.15em xl:(text-3.2 c-secondary/25)';
   transition: color 0.15s ease-out, font-weight 0.15s ease-out;
 }
 .toc-link-active {
@@ -103,18 +104,18 @@ const filteredHeadings = headings.filter(heading =>
 
 /* Hover Effect */
 #toc-container:hover :is(.toc-links-h2, .toc-links-h3, .toc-links-h4) {
-  --at-apply: '2xl:(c-secondary/60 hover:c-primary) hover:(c-secondary font-medium)';
+  --at-apply: 'xl:(c-secondary/60 hover:c-primary) hover:(c-secondary font-medium)';
 }
 #toc-container:hover .toc-link-active {
-  --at-apply: '2xl:c-primary';
+  --at-apply: 'xl:c-primary';
 }
 
 /* Overflow and Scrollbar */
 #toc-toggle:checked ~ #toc-accordion-wrapper #toc-accordion-content {
-  --at-apply: 'overflow-y-auto 2xl:overflow-hidden';
+  --at-apply: 'overflow-hidden';
 }
 #toc-accordion-content {
-  --at-apply: 'max-h-59.3 overflow-hidden pl-4 pr-6 2xl:(max-h-[calc(100vh-26.75rem)] overflow-y-auto scrollbar-hidden)';
+  --at-apply: 'max-h-59.3 overflow-y-auto pl-4 pr-6 xl:(max-h-[calc(100vh-8rem)] scrollbar-hidden)';
   scrollbar-width: thin;
   scrollbar-color: oklch(var(--un-preset-theme-colors-secondary) / 0.15) transparent;
 }
@@ -122,21 +123,14 @@ const filteredHeadings = headings.filter(heading =>
   --at-apply: 'hidden';
 }
 
-/* Mobile Initial State */
+/* Initial State (Default Open for All) */
 #toc-accordion-wrapper {
-  --at-apply: 'grid rows-[0fr]';
+  --at-apply: 'grid rows-[1fr]';
   transition: grid-template-rows 0.3s ease-in-out;
 }
+/* Toggled State (Closed) */
 #toc-toggle:checked ~ #toc-accordion-wrapper {
-  --at-apply: 'rows-[1fr]';
-}
-
-/* Desktop Initial State */
-#toc-accordion-wrapper {
-  --at-apply: '2xl:rows-[1fr]';
-}
-#toc-toggle:checked ~ #toc-accordion-wrapper {
-  --at-apply: '2xl:rows-[0fr]';
+  --at-apply: 'rows-[0fr]';
 }
 </style>
 
@@ -146,8 +140,8 @@ let headingObserver: IntersectionObserver | null = null
 let contentEndObserver: IntersectionObserver | null = null
 
 function setupTOCHighlight() {
-  const is2xl = window.innerWidth >= 1536
-  if (!is2xl) {
+  const isXl = window.innerWidth >= 1280
+  if (!isXl) {
     return
   }
 

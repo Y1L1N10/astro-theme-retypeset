@@ -5,6 +5,7 @@ import Comment from '@/components/Comment/Index.astro'
 import PostDate from '@/components/PostDate.astro'
 import TagList from '@/components/TagList.astro'
 import BackButton from '@/components/Widgets/BackButton.astro'
+import PostAction from '@/components/Widgets/PostAction.astro'
 import TOC from '@/components/Widgets/TOC.astro'
 import { allLocales, defaultLocale, moreLocales } from '@/config'
 import Layout from '@/layouts/Layout.astro'
@@ -106,6 +107,7 @@ const { Content, headings, remarkPluginFrontmatter } = await render(post)
   postSlug={post.id}
   supportedLangs={supportedLangs}
 >
+  <PostAction />
   <article class="heti">
     <div class="relative">
       <!-- Go Back Button On Desktop -->
@@ -143,14 +145,18 @@ const { Content, headings, remarkPluginFrontmatter } = await render(post)
       <div id="post-copyright" />
       <!-- Tag List -->
       {post.data.tags?.length > 0 && (
-        <div class="mt-12.6 uno-decorative-line" />
-        <TagList
-          tags={post.data.tags}
-          lang={lang}
-        />
+        <div id="post-tags" class="scroll-mt-32">
+          <div class="mt-12.6 uno-decorative-line" />
+          <TagList
+            tags={post.data.tags}
+            lang={lang}
+          />
+        </div>
       )}
       <!-- Comment -->
-      <Comment />
+      <div id="post-comment" class="scroll-mt-32">
+        <Comment />
+      </div>
     </div>
   </article>
 </Layout>

@@ -15,6 +15,9 @@ html {
   --heatmap-low-dark: rgb(182, 112, 89);
   --heatmap-medium-dark: #26a641;
   --heatmap-high-dark: #39d353;
+
+  zoom: 0.9; /* 添加这一行 */
+  --at-apply: 'bg-background c-secondary antialiased';
 }
 
 /* Fix Flash Issue On iOS */
