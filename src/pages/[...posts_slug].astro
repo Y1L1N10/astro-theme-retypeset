@@ -134,6 +134,8 @@ const { Content, headings, remarkPluginFrontmatter } = await render(post)
         date={post.data.published}
         updatedDate={post.data.updated}
         minutes={remarkPluginFrontmatter.minutes}
+        words={remarkPluginFrontmatter.words}
+        lang={lang}
       />
     </div>
     <!-- TOC -->
@@ -160,3 +162,29 @@ const { Content, headings, remarkPluginFrontmatter } = await render(post)
     </div>
   </article>
 </Layout>
+
+<script>
+ // Handle progressive image loading
+ function initImageLoading() {
+   const images = document.querySelectorAll('img.opacity-0')
+
+   images.forEach((img) => {
+     // If image is already loaded
+     if ((img as HTMLImageElement).complete) {
+       img.classList.remove('opacity-0')
+     }
+ else {
+       // Wait for load
+       img.addEventListener('load', () => {
+         img.classList.remove('opacity-0')
+       }, { once: true })
+     }
+   })
+ }
+
+ // Run on initial load
+ initImageLoading()
+
+ // Run on view transitions
+ document.addEventListener('astro:page-load', initImageLoading)
+</script>

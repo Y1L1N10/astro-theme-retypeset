@@ -4,7 +4,7 @@
  * Source: https://github.com/Kalabasa/leanrada.com/blob/7b6739c7c30c66c771fcbc9e1dc8942e628c5024/main/site/common.css
  */
 
-[style*="--lqip:"] {
+.lqip-placeholder {
   /* LQIP Variables */
   /* Extracting bit-packed information from the integer hash */
   --lqip-ca: mod(round(down, calc((var(--lqip) + 524288) / 262144)), 4);
