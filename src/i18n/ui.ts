@@ -10,6 +10,7 @@ export const ui = {
     toc: 'Table of Contents',
     reading_time: 'About {0} minutes read',
     related_posts: 'Related Posts',
+    search: 'Search',
   },
   'zh': {
     title: '独木冠林🌲',
@@ -22,6 +23,7 @@ export const ui = {
     toc: '目录',
     reading_time: '约 {0} 分钟阅读',
     related_posts: '相关文章',
+    search: '搜索',
   },
   'zh-tw': {
     title: '獨木冠林🌲',
@@ -34,6 +36,7 @@ export const ui = {
     toc: '目錄',
     reading_time: '約 {0} 分鐘閱讀',
     related_posts: '相關文章',
+    search: '搜尋',
   },
   // 可以在此添加其他语言的 UI 翻译,例如:
   // 'de': {
