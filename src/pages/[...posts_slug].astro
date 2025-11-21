@@ -6,6 +6,7 @@ import PostDate from '@/components/PostDate.astro'
 import TagList from '@/components/TagList.astro'
 import BackButton from '@/components/Widgets/BackButton.astro'
 import PostAction from '@/components/Widgets/PostAction.astro'
+import RelatedPosts from '@/components/Widgets/RelatedPosts.astro'
 import TOC from '@/components/Widgets/TOC.astro'
 import { allLocales, defaultLocale, moreLocales } from '@/config'
 import Layout from '@/layouts/Layout.astro'
@@ -155,6 +156,10 @@ const { Content, headings, remarkPluginFrontmatter } = await render(post)
           />
         </div>
       )}
+
+      <!-- Related Posts -->
+      <RelatedPosts currentPost={post} lang={lang} />
+
       <!-- Comment -->
       <div id="post-comment" class="scroll-mt-32">
         <Comment />
