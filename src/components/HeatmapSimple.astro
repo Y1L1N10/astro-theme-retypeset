@@ -164,20 +164,24 @@ let tempStreak = 0
 // 为了计算 streak，我们最好按时间正序遍历
 const sortedDays = [...heatmap].reverse() // 变为旧 -> 新
 
-// 简单的节假日判断（示例：元旦、劳动节、国庆节）
-// 注意：农历节日（春节、中秋等）需要额外库支持，这里仅作演示
-function isHoliday(date: Date): boolean {
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  // 1.1 元旦, 5.1 劳动节, 10.1 国庆节
-  if ((month === 1 && day === 1) || (month === 5 && day === 1) || (month === 10 && day === 1)) {
-    return true
-  }
-  return false
-}
+// 使用 chinese-days 库进行精确的节假日判断
+import chineseDays from 'chinese-days'
+const { isWorkday } = chineseDays
 
 function isRestDay(date: Date): boolean {
-  return isWeekend(date) || isHoliday(date)
+  // 判断是否为中文环境
+  const isChinese = locale?.toLowerCase().startsWith('zh')
+
+  if (isChinese) {
+    // 构造 YYYY-MM-DD 字符串以避免时区问题
+    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+    // 在中国，休息日 = 非工作日 (包含周末且非调休，以及法定节假日)
+    return !isWorkday(dateStr)
+  }
+
+  // 其他语言环境，默认仅周末为休息日
+  // 如果需要支持其他国家节假日，可以引入 date-holidays 等库
+  return isWeekend(date)
 }
 
 sortedDays.forEach((day) => {
@@ -241,26 +245,26 @@ const currentLabels = statsLabelsMap[locale?.toLowerCase() || 'en'] || statsLabe
     </div>
   </div>
 
-  <!-- 后半年（较新的数据） -->
+  <!-- 前半年（较早的数据） -->
   <div class="heatmap-section">
     <div class="heatmap-months">
-      {secondHalfMonths.map(month => (
+      {firstHalfMonths.map(month => (
         <span class="heatmap-month-label" style={`left: ${month.index * 0.875}rem`}>
           {month.label}
         </span>
       ))}
     </div>
     <div class="heatmap-grid">
-      {secondHalf.map((day, index) => {
+      {firstHalf.map((day, index) => {
         const postCount = day.posts.length
         const totalCount = postCount + day.githubCount
         const level = getLevel(totalCount)
         const colorClass = getColorClass(level, postCount > 0)
-        const globalIndex = halfPoint + index
+        const globalIndex = 0 + index
         const col = Math.floor(globalIndex / 7)
         const row = globalIndex % 7
         return (
-          <div class="heatmap-day" data-col={col} data-row={row}>
+          <div class="heatmap-day" data-col={col} data-row={row} style={{ animationDelay: `${globalIndex * 8}ms` }}>
             <i class={`heatmap-dot ${colorClass}`}></i>
             <div class="heatmap-tooltip">
               <time class="tooltip-date">{formatDate(day.date, locale)}</time>
@@ -295,26 +299,26 @@ const currentLabels = statsLabelsMap[locale?.toLowerCase() || 'en'] || statsLabe
     </div>
   </div>
 
-  <!-- 前半年（较早的数据） -->
+  <!-- 后半年（较新的数据） -->
   <div class="heatmap-section">
     <div class="heatmap-months">
-      {firstHalfMonths.map(month => (
+      {secondHalfMonths.map(month => (
         <span class="heatmap-month-label" style={`left: ${month.index * 0.875}rem`}>
           {month.label}
         </span>
       ))}
     </div>
     <div class="heatmap-grid">
-      {firstHalf.map((day, index) => {
+      {secondHalf.map((day, index) => {
         const postCount = day.posts.length
         const totalCount = postCount + day.githubCount
         const level = getLevel(totalCount)
         const colorClass = getColorClass(level, postCount > 0)
-        const globalIndex = 0 + index
+        const globalIndex = halfPoint + index
         const col = Math.floor(globalIndex / 7)
         const row = globalIndex % 7
         return (
-          <div class="heatmap-day" data-col={col} data-row={row}>
+          <div class="heatmap-day" data-col={col} data-row={row} style={{ animationDelay: `${globalIndex * 8}ms` }}>
             <i class={`heatmap-dot ${colorClass}`}></i>
             <div class="heatmap-tooltip">
               <time class="tooltip-date">{formatDate(day.date, locale)}</time>
@@ -401,11 +405,65 @@ function initTooltipPositioning() {
   })
 }
 
+// 触发热力图动画
+function triggerHeatmapAnimation() {
+  const days = document.querySelectorAll('.heatmap-day')
+  days.forEach(day => {
+    day.classList.remove('animate')
+    // 强制重绘 (Reflow) 以便重新触发动画
+    void (day as HTMLElement).offsetWidth
+    day.classList.add('animate')
+  })
+
+  // 动画结束后移除类（可选，防止干扰）
+  // 最长延迟约 1.5s + 0.3s 动画 = 1.8s，这里给 2s 安全时间
+  setTimeout(() => {
+    days.forEach(day => day.classList.remove('animate'))
+  }, 4000)
+}
+
+// 监听主题变化
+let themeObserver: MutationObserver | null = null
+
+function initThemeObserver() {
+  // 防止重复监听
+  if (themeObserver) {
+    themeObserver.disconnect()
+  }
+
+  themeObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        const oldClass = mutation.oldValue || ''
+        const newClass = (mutation.target as HTMLElement).className || ''
+        
+        const wasDark = oldClass.includes('dark')
+        const isDark = newClass.includes('dark')
+
+        // 只有当 dark 类状态发生改变时才触发动画
+        if (wasDark !== isDark) {
+          triggerHeatmapAnimation()
+        }
+      }
+    })
+  })
+
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+    attributeOldValue: true // 需要获取旧值来比较
+  })
+}
+
 // 初始化
-initTooltipPositioning()
+// initTooltipPositioning() // 移到 astro:page-load 中统一处理
+// initThemeObserver()      // 移到 astro:page-load 中统一处理
 
 // 处理动态内容加载和窗口大小变化
-document.addEventListener('astro:page-load', initTooltipPositioning)
+document.addEventListener('astro:page-load', () => {
+  initTooltipPositioning()
+  initThemeObserver()
+})
 window.addEventListener('resize', initTooltipPositioning)
 </script>
 
@@ -457,6 +515,24 @@ window.addEventListener('resize', initTooltipPositioning)
 
   .heatmap-day {
     position: relative;
+    /* 默认不隐藏，也不动画 */
+  }
+
+  /* 只有添加了 .animate 类时才触发动画 */
+  .heatmap-day.animate {
+    opacity: 0;
+    animation: heatmap-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+
+  @keyframes heatmap-pop {
+    0% {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   .heatmap-dot {
