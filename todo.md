@@ -1,5 +1,25 @@
 # TODO - Retypeset 功能增强计划
 
+## 📸 Current Task: Article Voiceover Player (Read Aloud)
+
+### 1. Component Structure
+- [ ] Create `src/components/Post/VoiceoverPlayer.astro`.
+- [ ] Logic: Use Web Speech API (`window.speechSynthesis`) for client-side text-to-speech.
+
+### 2. Voiceover Player UI
+- [ ] **Layout**: Flex container with gap, matching the "Article voiceover" design.
+- [ ] **Voice Icon**: Square button/icon on the left (Speaking Head).
+- [ ] **Player Controls**:
+    - [ ] **Container**: Light gray background (`bg-gray-100` or similar), rounded corners.
+    - [ ] **Play/Pause Button**: Toggle playback.
+    - [ ] **Text Info**: "Article voiceover" label and Timer (Current / Total).
+    - [ ] **Progress Bar**: Visual indicator of reading progress.
+    - [ ] **Speed Control**: Icon to toggle playback speed (1x, 1.5x, 2x).
+
+### 3. Integration
+- [ ] Add `VoiceoverPlayer` to `src/pages/[...posts_slug].astro` (e.g., before the footer or comments).
+- [ ] Extract article text content for the speech engine.
+
 ## 🎯 近期优先级（高）
 
 ### 1. 阅读进度指示器
