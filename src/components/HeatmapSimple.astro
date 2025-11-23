@@ -4,6 +4,7 @@
  * 不依赖 Svelte，不需要客户端 JS
  */
 import { getPostPath } from '@/i18n/path'
+import { getGitHubContributions } from '@/utils/github-contributions'
 import { addDays, diffDays, formatDate, getWeekday, subtractDays } from '@/utils/time-simple'
 
 interface Props {
@@ -19,9 +20,10 @@ interface Props {
   locale?: string
   lang?: string
   startDate?: string // 可选：指定开始日期 (YYYY-MM-DD)
+  githubUser?: string
 }
 
-const { posts, locale = 'zh-CN', lang = '', startDate } = Astro.props
+const { posts, locale = 'zh-CN', lang = '', startDate, githubUser } = Astro.props
 const now = new Date()
 
 // 确定起始日期和天数
@@ -46,15 +48,23 @@ if (startDate) {
   days = 52 * 7 // 固定显示52周(一年)
 }
 
+// 获取 GitHub 数据
+let githubData = new Map<string, number>()
+if (githubUser) {
+  githubData = await getGitHubContributions(githubUser)
+}
+
 // 创建热力图数据结构
 type HeatmapDay = {
   date: Date
   posts: typeof posts
+  githubCount: number
 }
 
 const heatmap: HeatmapDay[] = Array.from({ length: days }, (_, day) => ({
   date: subtractDays(start, day),
   posts: [],
+  githubCount: 0,
 }))
 
 // 填充文章数据
@@ -67,6 +77,16 @@ for (const post of posts) {
   if (gap >= 0 && gap < days) {
     heatmap[gap].posts.push(post)
   }
+}
+
+// 填充 GitHub 数据
+if (githubUser) {
+  heatmap.forEach((day) => {
+    const dateStr = day.date.toISOString().split('T')[0]
+    if (githubData.has(dateStr)) {
+      day.githubCount = githubData.get(dateStr)!
+    }
+  })
 }
 
 // 反转数组，让最新的在右边
@@ -84,7 +104,24 @@ function getPostUrl(post: typeof posts[0]): string {
   return getPostPath(slug, lang)
 }
 
-// 无需单独的渲染函数，直接在模板中使用
+// 辅助函数：计算活跃等级
+function getLevel(count: number): number {
+  if (count >= 5)
+return 3
+  if (count >= 3)
+return 2
+  if (count >= 1)
+return 1
+  return 0
+}
+
+// 辅助函数：获取颜色类名
+function getColorClass(level: number, hasPost: boolean): string {
+  if (level === 0)
+return 'level-0'
+  const type = hasPost ? 'post' : 'github'
+  return `type-${type}-level-${level}`
+}
 ---
 
 <div class="heatmap-wrapper">
@@ -92,33 +129,41 @@ function getPostUrl(post: typeof posts[0]): string {
   <div class="heatmap-section">
     <div class="heatmap-grid">
       {secondHalf.map((day, index) => {
-        const count = day.posts.length
-        const opacity = count > 2 ? '100' : count > 1 ? '70' : count > 0 ? '40' : '10'
+        const postCount = day.posts.length
+        const totalCount = postCount + day.githubCount
+        const level = getLevel(totalCount)
+        const colorClass = getColorClass(level, postCount > 0)
         const globalIndex = halfPoint + index
         const col = Math.floor(globalIndex / 7)
         const row = globalIndex % 7
         return (
           <div class="heatmap-day" data-col={col} data-row={row}>
-            <i class={`heatmap-dot opacity-${opacity}`}></i>
+            <i class={`heatmap-dot ${colorClass}`}></i>
             <div class="heatmap-tooltip">
               <time class="tooltip-date">{formatDate(day.date, locale)}</time>
-              {count > 0
+              {totalCount > 0
 ? (
                 <>
-                  <p class="tooltip-count">文章 {count} 篇：</p>
-                  <ul class="tooltip-list">
-                    {day.posts.map((post: typeof posts[0]) => (
-                      <li>
-                        <a href={getPostUrl(post)} class="tooltip-link">
-                          {post.data.title}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+                  <p class="tooltip-count">
+                    {postCount > 0 && <span>文章 {postCount} 篇</span>}
+                    {postCount > 0 && day.githubCount > 0 && <span>，</span>}
+                    {day.githubCount > 0 && <span>GitHub {day.githubCount} 次</span>}
+                  </p>
+                  {postCount > 0 && (
+                    <ul class="tooltip-list">
+                      {day.posts.map((post: typeof posts[0]) => (
+                        <li>
+                          <a href={getPostUrl(post)} class="tooltip-link">
+                            {post.data.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </>
               )
 : (
-                <p class="tooltip-empty">无字</p>
+                <p class="tooltip-empty">无活动</p>
               )}
             </div>
           </div>
@@ -131,33 +176,41 @@ function getPostUrl(post: typeof posts[0]): string {
   <div class="heatmap-section">
     <div class="heatmap-grid">
       {firstHalf.map((day, index) => {
-        const count = day.posts.length
-        const opacity = count > 2 ? '100' : count > 1 ? '70' : count > 0 ? '40' : '10'
+        const postCount = day.posts.length
+        const totalCount = postCount + day.githubCount
+        const level = getLevel(totalCount)
+        const colorClass = getColorClass(level, postCount > 0)
         const globalIndex = 0 + index
         const col = Math.floor(globalIndex / 7)
         const row = globalIndex % 7
         return (
           <div class="heatmap-day" data-col={col} data-row={row}>
-            <i class={`heatmap-dot opacity-${opacity}`}></i>
+            <i class={`heatmap-dot ${colorClass}`}></i>
             <div class="heatmap-tooltip">
               <time class="tooltip-date">{formatDate(day.date, locale)}</time>
-              {count > 0
+              {totalCount > 0
 ? (
                 <>
-                  <p class="tooltip-count">文章 {count} 篇：</p>
-                  <ul class="tooltip-list">
-                    {day.posts.map((post: typeof posts[0]) => (
-                      <li>
-                        <a href={getPostUrl(post)} class="tooltip-link">
-                          {post.data.title}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+                  <p class="tooltip-count">
+                    {postCount > 0 && <span>文章 {postCount} 篇</span>}
+                    {postCount > 0 && day.githubCount > 0 && <span>，</span>}
+                    {day.githubCount > 0 && <span>GitHub {day.githubCount} 次</span>}
+                  </p>
+                  {postCount > 0 && (
+                    <ul class="tooltip-list">
+                      {day.posts.map((post: typeof posts[0]) => (
+                        <li>
+                          <a href={getPostUrl(post)} class="tooltip-link">
+                            {post.data.title}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </>
               )
 : (
-                <p class="tooltip-empty">无字</p>
+                <p class="tooltip-empty">无活动</p>
               )}
             </div>
           </div>
@@ -266,21 +319,34 @@ window.addEventListener('resize', initTooltipPositioning)
     transition: background-color 0.2s ease;
   }
 
-  /* GitHub style colors - Light mode */
-  .opacity-100 {
-    background-color: var(--heatmap-high, #239a3b);
+  /* GitHub style colors (Green) - Light mode */
+  .type-github-level-3 {
+    background-color: var(--heatmap-github-high, #239a3b);
   }
 
-  .opacity-70 {
-    background-color: var(--heatmap-medium, #7bc96f);
+  .type-github-level-2 {
+    background-color: var(--heatmap-github-medium, #7bc96f);
   }
 
-  .opacity-40 {
-    background-color: var(--heatmap-low, #c6e48b);
+  .type-github-level-1 {
+    background-color: var(--heatmap-github-low, #c6e48b);
   }
 
-  .opacity-10 {
+  .level-0 {
     background-color: var(--heatmap-empty, #ebedf0);
+  }
+
+  /* Post style colors (Claude Orange) - Light mode */
+  .type-post-level-3 {
+    background-color: rgb(224, 97, 62); /* #DE7356 */
+  }
+
+  .type-post-level-2 {
+    background-color: rgba(222, 115, 86, 0.7);
+  }
+
+  .type-post-level-1 {
+    background-color: rgb(220, 130, 106);
   }
 
   /* Dark mode colors */
@@ -288,20 +354,34 @@ window.addEventListener('resize', initTooltipPositioning)
     background-color: var(--heatmap-empty-dark, #161b22);
   }
 
-  html.dark .opacity-100 {
+  html.dark .level-0 {
+    background-color: var(--heatmap-empty-dark, #161b22);
+  }
+
+  /* GitHub Green - Dark mode */
+  html.dark .type-github-level-3 {
     background-color: var(--heatmap-high-dark, #39d353);
   }
 
-  html.dark .opacity-70 {
+  html.dark .type-github-level-2 {
     background-color: var(--heatmap-medium-dark, #26a641);
   }
 
-  html.dark .opacity-40 {
+  html.dark .type-github-level-1 {
     background-color: var(--heatmap-low-dark, #0e4429);
   }
 
-  html.dark .opacity-10 {
-    background-color: var(--heatmap-empty-dark, #161b22);
+  /* Post Orange (Claude Style) - Dark mode */
+  html.dark .type-post-level-3 {
+    background-color: #de7356;
+  }
+
+  html.dark .type-post-level-2 {
+    background-color: #914c38;
+  }
+
+  html.dark .type-post-level-1 {
+    background-color: #45231a;
   }
 
   .heatmap-tooltip {

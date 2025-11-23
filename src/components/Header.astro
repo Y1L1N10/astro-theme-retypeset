@@ -1,15 +1,15 @@
 ---
+import HeatmapSimple from '@/components/HeatmapSimple.astro'
 import themeConfig from '@/config'
 import { ui } from '@/i18n/ui'
 import { getPageInfo } from '@/utils/page'
-import HeatmapSimple from '@/components/HeatmapSimple.astro'
 
 interface Props {
-  posts?: Array<any>;
-  showHeatmap?: boolean;
+  posts?: Array<any>
+  showHeatmap?: boolean
 }
 
-const { posts = [], showHeatmap = false } = Astro.props;
+const { posts = [], showHeatmap = false } = Astro.props
 const { currentLang, getLocalizedPath, isPost } = getPageInfo(Astro.url.pathname)
 const { title, subtitle, i18nTitle } = themeConfig.site
 
@@ -66,12 +66,13 @@ const SubtitleTag = isPost ? 'div' : 'h2'
     </SubtitleTag>
   )}
 
-  {showHeatmap && !isPost && posts.length > 0 && (
+  {showHeatmap && (
     <div class="heatmap-wrapper">
       <HeatmapSimple
         posts={posts}
         locale={currentLang}
         lang={currentLang}
+        githubUser={themeConfig.site.githubUser}
       />
     </div>
   )}

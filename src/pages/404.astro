@@ -1,8 +1,12 @@
 ---
+import { defaultLocale } from '@/config'
 import Layout from '@/layouts/Layout.astro'
+import { getPosts } from '@/utils/content'
+
+const allPosts = await getPosts(defaultLocale)
 ---
 
-<Layout>
+<Layout posts={allPosts} showHeatmap={true}>
   <!-- Decorative Line -->
   <div class="uno-decorative-line" />
   <!-- Page Not Found -->

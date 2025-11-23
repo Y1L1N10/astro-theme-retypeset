@@ -11,8 +11,8 @@ html {
   --heatmap-high: #239a3b;
 
   /* Heatmap colors - Dark mode (GitHub style) */
-  --heatmap-empty-dark: rgb(170, 169, 170);
-  --heatmap-low-dark: rgb(182, 112, 89);
+  --heatmap-empty-dark: rgb(42, 49, 60);
+  --heatmap-low-dark: #0e4429;
   --heatmap-medium-dark: #26a641;
   --heatmap-high-dark: #39d353;
 

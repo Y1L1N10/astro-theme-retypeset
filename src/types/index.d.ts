@@ -12,6 +12,7 @@ export interface ThemeConfig {
     url: string
     base: string
     favicon: string
+    githubUser?: string
   }
   color: {
     mode: 'light' | 'dark' | 'auto'

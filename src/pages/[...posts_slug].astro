@@ -10,7 +10,7 @@ import RelatedPosts from '@/components/Widgets/RelatedPosts.astro'
 import TOC from '@/components/Widgets/TOC.astro'
 import { allLocales, defaultLocale, moreLocales } from '@/config'
 import Layout from '@/layouts/Layout.astro'
-import { checkPostSlugDuplication } from '@/utils/content'
+import { checkPostSlugDuplication, getPosts } from '@/utils/content'
 import { getPostDescription } from '@/utils/description'
 
 export async function getStaticPaths() {
@@ -100,6 +100,9 @@ const { post, lang, supportedLangs } = Astro.props
 const slug = post.data.abbrlink || post.id
 const description = getPostDescription(post, 'meta')
 const { Content, headings, remarkPluginFrontmatter } = await render(post)
+
+// 获取所有文章用于热力图
+const allPosts = await getPosts(lang)
 ---
 
 <Layout
@@ -107,6 +110,8 @@ const { Content, headings, remarkPluginFrontmatter } = await render(post)
   postDescription={description}
   postSlug={post.id}
   supportedLangs={supportedLangs}
+  posts={allPosts}
+  showHeatmap={true}
 >
   <PostAction />
   <article class="heti" data-pagefind-body>
