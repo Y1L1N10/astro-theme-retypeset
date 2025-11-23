@@ -6,7 +6,7 @@
   "repository": "https://github.com/radishzzz/astro-theme-retypeset",
   "scripts": {
     "dev": "astro check && astro dev",
-    "build": "astro check && astro build && pnpm apply-lqip",
+    "build": "astro check && astro build && pagefind --site dist && pnpm apply-lqip",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint .",
@@ -60,6 +60,7 @@
     "fast-glob": "^3.3.3",
     "lint-staged": "^16.1.6",
     "ndarray-pixels": "^5.0.1",
+    "pagefind": "^1.4.0",
     "simple-git-hooks": "^2.13.1",
     "tsx": "^4.20.5",
     "typescript": "~5.9.2",

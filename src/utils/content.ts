@@ -236,3 +236,47 @@ async function _getTagSupportedLangs(tag: string) {
 }
 
 export const getTagSupportedLangs = memoize(_getTagSupportedLangs)
+
+/**
+ * Get related posts based on tags
+ *
+ * @param currentPost The reference post to find related content for
+ * @param lang The language code to filter by
+ * @param limit Maximum number of related posts to return
+ * @returns Array of related posts sorted by relevance (tag overlap) and date
+ */
+async function _getRelatedPosts(currentPost: Post, lang?: string, limit = 3) {
+  const allPosts = await getPosts(lang)
+  const currentTags = new Set(currentPost.data.tags || [])
+
+  // Filter out the current post
+  const candidates = allPosts.filter(p => p.id !== currentPost.id)
+
+  // If current post has no tags, return empty array (or could return latest posts)
+  if (currentTags.size === 0) {
+    return []
+  }
+
+  // Calculate relevance score based on shared tags
+  const scored = candidates.map((post) => {
+    const shared = (post.data.tags || []).filter(t => currentTags.has(t))
+    return { post, score: shared.length }
+  })
+
+  // Filter posts with at least one shared tag and sort by score then date
+  const related = scored
+    .filter(x => x.score > 0)
+    .sort((a, b) => {
+      // First sort by score (descending)
+      if (b.score !== a.score) {
+        return b.score - a.score
+      }
+      // Then sort by date (descending)
+      return b.post.data.published.valueOf() - a.post.data.published.valueOf()
+    })
+    .map(x => x.post)
+
+  return related.slice(0, limit)
+}
+
+export const getRelatedPosts = memoize(_getRelatedPosts)

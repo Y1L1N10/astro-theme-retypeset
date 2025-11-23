@@ -1,5 +1,6 @@
 ---
 import PostList from '@/components/PostList.astro'
+import SearchTrigger from '@/components/SearchTrigger.astro'
 import { defaultLocale, moreLocales } from '@/config'
 import Layout from '@/layouts/Layout.astro'
 import { getPinnedPosts, getPostsByYear } from '@/utils/content'
@@ -40,6 +41,10 @@ const allPosts = await getPosts(lang)
 ---
 
 <Layout posts={allPosts} showHeatmap={true}>
+  <div class="mb-8 hidden lg:block">
+    <SearchTrigger class="w-full" />
+  </div>
+
   <!-- Pinned Posts -->
   {pinnedPosts.length > 0 && (
     <section class="mb-7.5">

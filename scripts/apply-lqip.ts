@@ -331,7 +331,7 @@ async function processNewImages(fileMappings: FileMapping[], stats: ImageStats, 
   return newMap
 }
 
-function processImage(img: HTMLElement, lqipMap: LqipMap): boolean {
+async function processImage(img: HTMLElement, figure: HTMLElement, lqipMap: LqipMap): Promise<boolean> {
   const src = img.getAttribute('src')
   if (!src) {
     return false
@@ -342,17 +342,47 @@ function processImage(img: HTMLElement, lqipMap: LqipMap): boolean {
     return false
   }
 
-  const currentStyle = img.getAttribute('style') ?? ''
+  // Check if already processed
+  const currentStyle = figure.getAttribute('style') ?? ''
   if (currentStyle.includes('--lqip:')) {
     return false
   }
 
-  const newStyle = currentStyle
-    ? `${currentStyle}; --lqip:${lqipValue}`
-    : `--lqip:${lqipValue}`
+  try {
+    // Get image dimensions
+    // We need to resolve the file path from the src
+    // src is like /_astro/image.hash.webp
+    // distDir is 'dist'
+    const filePath = path.join(distDir, src)
+    const metadata = await sharp(filePath).metadata()
 
-  img.setAttribute('style', newStyle)
-  return true
+    if (metadata.width && metadata.height) {
+      // Set width and height on img to prevent layout shift
+      img.setAttribute('width', metadata.width.toString())
+      img.setAttribute('height', metadata.height.toString())
+
+      // Set aspect-ratio on figure to reserve space
+      // Also apply LQIP variable here
+      const newStyle = currentStyle
+        ? `${currentStyle}; --lqip:${lqipValue}; aspect-ratio: ${metadata.width} / ${metadata.height}`
+        : `--lqip:${lqipValue}; aspect-ratio: ${metadata.width} / ${metadata.height}`
+
+      figure.setAttribute('style', newStyle)
+
+      // Add class to figure to trigger LQIP background
+      const currentClass = figure.getAttribute('class') ?? ''
+      if (!currentClass.includes('lqip-placeholder')) {
+        figure.setAttribute('class', `${currentClass} lqip-placeholder`.trim())
+      }
+
+      return true
+    }
+  }
+  catch (e) {
+    console.warn(`Failed to get metadata for ${src}`, e)
+  }
+
+  return false
 }
 
 async function applyLqipToHtml(lqipMap: LqipMap): Promise<number> {
@@ -371,10 +401,14 @@ async function applyLqipToHtml(lqipMap: LqipMap): Promise<number> {
 
       let hasChanges = false
       for (const img of images) {
-        const wasUpdated = processImage(img, lqipMap)
-        if (wasUpdated) {
-          totalApplied++
-          hasChanges = true
+        const parent = img.parentNode
+        // Only process if parent is a figure (which our rehype plugin ensures)
+        if (parent && parent.tagName === 'FIGURE') {
+          const wasUpdated = await processImage(img, parent as HTMLElement, lqipMap)
+          if (wasUpdated) {
+            totalApplied++
+            hasChanges = true
+          }
         }
       }
 

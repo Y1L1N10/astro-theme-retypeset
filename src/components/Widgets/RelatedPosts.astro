@@ -1,0 +1,47 @@
+---
+import type { Post } from '@/utils/content'
+import PostDate from '@/components/PostDate.astro'
+import { getPostPath } from '@/i18n/path'
+import { ui } from '@/i18n/ui'
+import { getRelatedPosts } from '@/utils/content'
+
+interface Props {
+  currentPost: Post
+  lang: string
+}
+
+const { currentPost, lang } = Astro.props
+
+const relatedPosts = await getRelatedPosts(currentPost, lang)
+const uiStrings = ui[lang as keyof typeof ui] || ui.en
+---
+
+{relatedPosts.length > 0 && (
+  <div class="related-posts mt-16 border-t border-secondary/20 pt-8">
+    <h2 class="mb-6 text-5 c-primary font-bold">{uiStrings.related_posts}</h2>
+    <ul class="flex flex-col gap-2">
+      {relatedPosts.map((post) => {
+        const slug = post.data.abbrlink || post.id
+        return (
+          <li class="flex items-baseline justify-between gap-4 border-b border-secondary/20 border-dashed pb-2 last:border-0">
+            <a
+              href={getPostPath(slug, lang)}
+              class="hover:c-accent truncate text-4 c-primary font-medium transition-colors"
+              title={post.data.title}
+            >
+              {post.data.title}
+            </a>
+
+            <div class="shrink-0 text-3.5 c-secondary/60 font-time">
+              <PostDate
+                date={post.data.published}
+                minutes={post.remarkPluginFrontmatter.minutes}
+                lang={lang}
+              />
+            </div>
+          </li>
+        )
+      })}
+    </ul>
+  </div>
+)}

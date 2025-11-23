@@ -1,0 +1,263 @@
+---
+import { themeConfig } from '@/config'
+
+const { light, dark } = themeConfig.color
+---
+
+<site-search>
+  <link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+  <dialog id="search-dialog" class="z-[999] m-auto hidden h-full max-h-full max-w-full w-full items-center justify-center bg-transparent p-0 open:flex backdrop:bg-gray-900/50">
+    <div class="relative max-h-[80vh] max-w-2xl w-full overflow-y-auto border border-gray-200 rounded-lg bg-white p-6 text-gray-900 shadow-xl dark:border-gray-700 dark:bg-[#1a1a1a] dark:text-gray-100">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-xl font-bold">Search</h2>
+        <button class="close-btn cursor-pointer rounded p-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="Close search">
+           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12z" /></svg>
+        </button>
+      </div>
+      <div id="pagefind-search"></div>
+    </div>
+  </dialog>
+</site-search>
+
+<script>
+class SiteSearch extends HTMLElement {
+  constructor() {
+    super()
+    this.onOpen = this.onOpen.bind(this)
+    this.onKeydown = this.onKeydown.bind(this)
+  }
+
+  connectedCallback() {
+    const dialog = this.querySelector('dialog')
+    const closeBtn = this.querySelector('.close-btn')
+
+    if (!dialog)
+      return
+
+    // Open event listener
+    window.addEventListener('open-search', this.onOpen)
+
+    // Close event listeners
+    closeBtn?.addEventListener('click', () => dialog.close())
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog)
+        dialog.close()
+    })
+
+    // Shortcut listener
+    window.addEventListener('keydown', this.onKeydown)
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('open-search', this.onOpen)
+    window.removeEventListener('keydown', this.onKeydown)
+  }
+
+  onOpen() {
+    const dialog = this.querySelector('dialog')
+    if (dialog && !dialog.open) {
+      dialog.showModal()
+      this.loadPagefind()
+    }
+  }
+
+  onKeydown(e: KeyboardEvent) {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault()
+      this.onOpen()
+    }
+  }
+
+  async loadPagefind() {
+    const init = () => {
+      const container = this.querySelector('#pagefind-search')
+      if (container) {
+        container.innerHTML = ''
+      }
+      // @ts-expect-error: PagefindUI is loaded globally
+      void new PagefindUI({
+        element: '#pagefind-search',
+        showSubResults: false,
+        showImages: false,
+        resetStyles: false,
+      })
+    }
+
+    // @ts-expect-error: PagefindUI is loaded globally
+    if (typeof PagefindUI !== 'undefined') {
+      init()
+      return
+    }
+
+    const scriptUrl = '/pagefind/pagefind-ui.js'
+    const existingScript = document.querySelector(`script[src="${scriptUrl}"]`)
+
+    if (existingScript) {
+      existingScript.addEventListener('load', init)
+      return
+    }
+
+    const script = document.createElement('script')
+    script.src = scriptUrl
+    script.onload = init
+    script.onerror = () => {
+      const container = document.getElementById('pagefind-search')
+      if (container) {
+        container.innerHTML = '<div class="flex flex-col items-center gap-2 text-center text-red-500"><p>Search is only available in production builds.</p><p class="text-sm text-gray-500 dark:text-gray-400">Run <code class="rounded bg-gray-100 px-1 py-0.5 dark:bg-gray-800">pnpm build && pnpm preview</code> to test.</p></div>'
+      }
+    }
+    document.body.appendChild(script)
+  }
+}
+
+customElements.define('site-search', SiteSearch)
+</script>
+
+<style
+  is:global
+  define:vars={{
+  'light-primary': light.primary,
+  'light-text': light.secondary,
+  'light-bg': light.background,
+  'light-border': light.highlight,
+  'dark-primary': dark.primary,
+  'dark-text': dark.secondary,
+  'dark-bg': dark.background,
+  'dark-border': dark.highlight,
+}}
+>
+  :root {
+    --pagefind-ui-scale: 1;
+    --pagefind-ui-primary: var(--light-primary);
+    --pagefind-ui-text: var(--light-text);
+    --pagefind-ui-background: var(--light-bg);
+    --pagefind-ui-border: var(--light-border);
+    --pagefind-ui-tag: var(--light-border);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: 0.5rem;
+    --pagefind-ui-font: inherit;
+  }
+
+  html.dark {
+    --pagefind-ui-primary: var(--dark-primary);
+    --pagefind-ui-text: var(--dark-text);
+    --pagefind-ui-background: var(--dark-bg);
+    --pagefind-ui-border: var(--dark-border);
+    --pagefind-ui-tag: var(--dark-border);
+  }
+
+  /* Pagefind UI Customization */
+  /* Pagefind UI Customization */
+  #pagefind-search .pagefind-ui__search-input {
+    border-radius: 9999px;
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+    background-color: var(--pagefind-ui-background);
+    background-image:
+      url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%239ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>'),
+      url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%239ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>');
+    background-position: 0.75rem center, calc(100% - 0.75rem) center;
+    background-repeat: no-repeat;
+    background-size: 1.25rem;
+  }
+
+  #pagefind-search .pagefind-ui__search-clear {
+    right: 2.5rem;
+  }
+
+  /* Search Results Layout */
+  #pagefind-search .pagefind-ui__results-area {
+    margin-top: 1.5rem;
+  }
+
+  #pagefind-search .pagefind-ui__message {
+    font-size: 0.9rem;
+    color: var(--pagefind-ui-text);
+    opacity: 0.7;
+    margin-bottom: 1rem;
+    font-weight: 500;
+  }
+
+  #pagefind-search .pagefind-ui__result {
+    list-style: none;
+    border: 1px solid var(--pagefind-ui-border);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    background: var(--pagefind-ui-background);
+    transition: all 0.2s ease;
+  }
+
+  #pagefind-search .pagefind-ui__result:hover {
+    border-color: var(--pagefind-ui-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+  }
+
+  #pagefind-search .pagefind-ui__result-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  #pagefind-search .pagefind-ui__result-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  #pagefind-search .pagefind-ui__result-link {
+    color: var(--pagefind-ui-text);
+    text-decoration: none;
+    display: block;
+  }
+
+  #pagefind-search .pagefind-ui__result-link:hover {
+    color: var(--pagefind-ui-primary);
+    text-decoration: none;
+  }
+
+  #pagefind-search .pagefind-ui__result-excerpt {
+    font-size: 0.9375rem;
+    color: var(--pagefind-ui-text);
+    opacity: 0.8;
+    line-height: 1.6;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Highlight Styling */
+  #pagefind-search mark {
+    background-color: transparent;
+    color: var(--pagefind-ui-primary);
+    font-weight: 700;
+    padding: 0;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 2px;
+  }
+
+  /* Load More Button */
+  #pagefind-search .pagefind-ui__button {
+    margin-top: 1rem;
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    background: var(--pagefind-ui-background);
+    border: 1px solid var(--pagefind-ui-border);
+    color: var(--pagefind-ui-text);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  #pagefind-search .pagefind-ui__button:hover {
+    border-color: var(--pagefind-ui-primary);
+    color: var(--pagefind-ui-primary);
+    background-color: rgba(128, 128, 128, 0.05);
+  }
+</style>

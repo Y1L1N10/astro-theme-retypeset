@@ -1,31 +1,5 @@
 import { visit } from 'unist-util-visit'
 
-function createFigure(imgNode, isInGallery = false) {
-  const altText = imgNode.properties?.alt
-  const shouldSkipCaption = !altText || altText.startsWith('_')
-  if (shouldSkipCaption && !isInGallery) {
-    return imgNode
-  }
-
-  const children = [imgNode]
-
-  if (!shouldSkipCaption) {
-    children.push({
-      type: 'element',
-      tagName: 'figcaption',
-      properties: {},
-      children: [{ type: 'text', value: altText }],
-    })
-  }
-
-  return {
-    type: 'element',
-    tagName: 'figure',
-    properties: isInGallery ? { className: ['gallery-item'] } : {},
-    children,
-  }
-}
-
 export function rehypeImageProcessor() {
   return (tree) => {
     visit(tree, 'element', (node, index, parent) => {
@@ -38,6 +12,10 @@ export function rehypeImageProcessor() {
       const imgNodes = []
       for (const child of node.children) {
         if (child.tagName === 'img') {
+          // Add lazy loading and async decoding
+          child.properties = child.properties || {}
+          child.properties.loading = 'lazy'
+          child.properties.decoding = 'async'
           imgNodes.push(child)
         }
         else if (child.type !== 'text' || child.value.trim() !== '') {
@@ -61,8 +39,8 @@ export function rehypeImageProcessor() {
       // Single image: convert to figure in non-gallery containers
       if (imgNodes.length === 1) {
         const figure = createFigure(imgNodes[0], false)
-        if (figure !== imgNodes[0]) {
-          // Only replace if conversion happened
+        // Always ensure it's a figure for LQIP background
+        if (node.tagName !== 'figure') {
           node.tagName = 'figure'
           node.properties = figure.properties
           node.children = figure.children
@@ -70,8 +48,38 @@ export function rehypeImageProcessor() {
         return
       }
 
-      // Multiple images: unwrap in non-gallery containers
-      parent.children.splice(index, 1, ...imgNodes)
+      // Multiple images: wrap each in figure
+      const figures = imgNodes.map(imgNode => createFigure(imgNode, false))
+      parent.children.splice(index, 1, ...figures)
     })
+  }
+}
+
+function createFigure(imgNode, isInGallery = false) {
+  // Add opacity transition classes to image
+  imgNode.properties = imgNode.properties || {}
+  imgNode.properties.className = (imgNode.properties.className || []).concat(['opacity-0', 'transition-opacity', 'duration-500'])
+
+  const altText = imgNode.properties?.alt
+  const shouldSkipCaption = !altText || altText.startsWith('_')
+
+  const children = [imgNode]
+
+  if (!shouldSkipCaption && !isInGallery) {
+    children.push({
+      type: 'element',
+      tagName: 'figcaption',
+      properties: {},
+      children: [{ type: 'text', value: altText }],
+    })
+  }
+
+  return {
+    type: 'element',
+    tagName: 'figure',
+    properties: {
+      className: isInGallery ? ['gallery-item', 'relative', 'overflow-hidden'] : ['relative', 'overflow-hidden'],
+    },
+    children,
   }
 }

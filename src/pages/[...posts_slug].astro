@@ -6,6 +6,7 @@ import PostDate from '@/components/PostDate.astro'
 import TagList from '@/components/TagList.astro'
 import BackButton from '@/components/Widgets/BackButton.astro'
 import PostAction from '@/components/Widgets/PostAction.astro'
+import RelatedPosts from '@/components/Widgets/RelatedPosts.astro'
 import TOC from '@/components/Widgets/TOC.astro'
 import { allLocales, defaultLocale, moreLocales } from '@/config'
 import Layout from '@/layouts/Layout.astro'
@@ -108,7 +109,7 @@ const { Content, headings, remarkPluginFrontmatter } = await render(post)
   supportedLangs={supportedLangs}
 >
   <PostAction />
-  <article class="heti">
+  <article class="heti" data-pagefind-body>
     <div class="relative">
       <!-- Go Back Button On Desktop -->
       <BackButton />
@@ -134,6 +135,8 @@ const { Content, headings, remarkPluginFrontmatter } = await render(post)
         date={post.data.published}
         updatedDate={post.data.updated}
         minutes={remarkPluginFrontmatter.minutes}
+        words={remarkPluginFrontmatter.words}
+        lang={lang}
       />
     </div>
     <!-- TOC -->
@@ -153,6 +156,10 @@ const { Content, headings, remarkPluginFrontmatter } = await render(post)
           />
         </div>
       )}
+
+      <!-- Related Posts -->
+      <RelatedPosts currentPost={post} lang={lang} />
+
       <!-- Comment -->
       <div id="post-comment" class="scroll-mt-32">
         <Comment />
@@ -160,3 +167,29 @@ const { Content, headings, remarkPluginFrontmatter } = await render(post)
     </div>
   </article>
 </Layout>
+
+<script>
+ // Handle progressive image loading
+ function initImageLoading() {
+   const images = document.querySelectorAll('img.opacity-0')
+
+   images.forEach((img) => {
+     // If image is already loaded
+     if ((img as HTMLImageElement).complete) {
+       img.classList.remove('opacity-0')
+     }
+ else {
+       // Wait for load
+       img.addEventListener('load', () => {
+         img.classList.remove('opacity-0')
+       }, { once: true })
+     }
+   })
+ }
+
+ // Run on initial load
+ initImageLoading()
+
+ // Run on view transitions
+ document.addEventListener('astro:page-load', initImageLoading)
+</script>

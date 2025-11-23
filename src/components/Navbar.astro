@@ -63,3 +63,12 @@ const navItems = [
     ))}
   </ul>
 </nav>
+
+<script>
+  const openSearchBtns = document.querySelectorAll('.js-open-search')
+  openSearchBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('open-search'))
+    })
+  })
+</script>

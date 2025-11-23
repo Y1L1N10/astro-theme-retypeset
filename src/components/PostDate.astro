@@ -1,17 +1,24 @@
 ---
 import { themeConfig } from '@/config'
+import { ui } from '@/i18n/ui'
 import { isPostPage } from '@/utils/page'
 
 interface Props {
   date: Date
   updatedDate?: Date
   minutes: number
+  words?: number
+  lang?: string
 }
 
-const { date, updatedDate, minutes } = Astro.props
+const { date, updatedDate, minutes, lang = 'en' } = Astro.props
 const { dateFormat: format } = themeConfig.global
 const isPost = isPostPage(Astro.url.pathname)
 const timeSpacingClass = isPost ? 'ml-1.75' : 'ml-1.5'
+
+// Get UI strings based on language, fallback to English if not found
+const uiStrings = ui[lang as keyof typeof ui] || ui.en
+const readingTimeText = uiStrings.reading_time.replace('{0}', minutes.toString())
 
 function formatDate(date: Date, format: 'YYYY-MM-DD' | 'MM-DD-YYYY' | 'DD-MM-YYYY' | 'MONTH DAY YYYY' | 'DAY MONTH YYYY') {
   if (format === 'YYYY-MM-DD') {
@@ -73,5 +80,5 @@ function formatDate(date: Date, format: 'YYYY-MM-DD' | 'MM-DD-YYYY' | 'DD-MM-YYY
 
 <!-- reading time -->
 <span class={timeSpacingClass}>
-  {minutes} min
+  {readingTimeText}
 </span>

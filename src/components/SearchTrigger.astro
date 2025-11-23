@@ -1,0 +1,327 @@
+---
+import { themeConfig } from '@/config'
+
+
+const { light, dark } = themeConfig.color
+
+interface Props {
+  class?: string
+}
+
+const { class: className } = Astro.props
+---
+
+<div class:list={['w-full', className]}>
+  <link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+  <div id="inline-search"></div>
+</div>
+
+<script>
+class InlineSearch extends HTMLElement {
+  constructor() {
+    super()
+  }
+
+  connectedCallback() {
+    this.loadPagefind()
+    window.addEventListener('keydown', this.onKeydown)
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('keydown', this.onKeydown)
+  }
+
+  onKeydown = (e: KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault()
+      const input = document.querySelector('#inline-search input') as HTMLInputElement
+      input?.focus()
+    }
+  }
+
+  async loadPagefind() {
+    const init = () => {
+      const container = document.getElementById('inline-search')
+      if (container) {
+        container.innerHTML = ''
+      }
+      // @ts-expect-error: PagefindUI is loaded globally
+      void new PagefindUI({
+        element: '#inline-search',
+        showSubResults: false,
+        showImages: false,
+        resetStyles: false,
+        translations: {
+          placeholder: 'Search',
+        },
+      })
+      // Add shortcut hint
+      this.addShortcutHint()
+    }
+
+    // @ts-expect-error: PagefindUI is loaded globally
+    if (typeof PagefindUI !== 'undefined') {
+      init()
+      return
+    }
+
+    const scriptUrl = '/pagefind/pagefind-ui.js'
+    const existingScript = document.querySelector(`script[src="${scriptUrl}"]`)
+
+    if (existingScript) {
+      existingScript.addEventListener('load', init)
+      return
+    }
+
+    const script = document.createElement('script')
+    script.src = scriptUrl
+    script.onload = init
+    script.onerror = () => {
+      const container = document.getElementById('inline-search')
+      if (container) {
+        container.innerHTML = '<div class="flex flex-col items-center gap-2 text-center text-red-500 py-4"><p>Search is only available in production builds.</p><p class="text-sm text-gray-500 dark:text-gray-400">Run <code class="rounded bg-gray-100 px-1 py-0.5 dark:bg-gray-800">pnpm build && pnpm preview</code> to test.</p></div>'
+      }
+    }
+    document.body.appendChild(script)
+  }
+
+  addShortcutHint() {
+    const isMac = navigator.platform.toUpperCase().includes('MAC')
+    const hint = isMac ? '⌘K' : 'Ctrl+K'
+    const inputWrapper = document.querySelector('#inline-search .pagefind-ui__search-input')?.parentElement
+    if (inputWrapper) {
+      inputWrapper.setAttribute('data-shortcut', hint)
+    }
+  }
+}
+
+customElements.define('inline-search', InlineSearch)
+</script>
+
+<inline-search></inline-search>
+
+<style
+  is:global
+  define:vars={{
+  'light-primary': light.primary,
+  'light-text': light.secondary,
+  'light-bg': light.background,
+  'light-border': light.highlight,
+  'dark-primary': dark.primary,
+  'dark-text': dark.secondary,
+  'dark-bg': dark.background,
+  'dark-border': dark.highlight,
+}}
+>
+  :root {
+    --pagefind-ui-scale: 1;
+    --pagefind-ui-primary: var(--light-primary);
+    --pagefind-ui-text: var(--light-text);
+    --pagefind-ui-background: var(--light-bg);
+    --pagefind-ui-border: var(--light-border);
+    --pagefind-ui-tag: var(--light-border);
+    --pagefind-ui-border-width: 0px;
+    --pagefind-ui-border-radius: 9999px;
+    --pagefind-ui-font: inherit;
+  }
+
+  html.dark {
+    --pagefind-ui-primary: var(--dark-primary);
+    --pagefind-ui-text: var(--dark-text);
+    --pagefind-ui-background: var(--dark-bg);
+    --pagefind-ui-border: var(--dark-border);
+    --pagefind-ui-tag: var(--dark-border);
+  }
+
+  /* Input Styling */
+  #inline-search .pagefind-ui__search-input {
+    border-radius: 9999px;
+    padding-left: 2.5rem;
+    padding-right: 4rem; /* Space for shortcut hint */
+    background-color: #f3f4f6; /* gray-100 */
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+
+    /* Icons */
+    background-image:
+      url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%239ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>'),
+      url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%239ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>');
+    background-position: 1rem center, calc(100% - 1rem) center;
+    background-repeat: no-repeat;
+    background-size: 1rem;
+  }
+
+  html.dark #inline-search .pagefind-ui__search-input {
+    background-color: #1f2937; /* gray-800 */
+  }
+
+  #inline-search .pagefind-ui__search-input:focus {
+    background-color: #fff;
+    border-color: var(--pagefind-ui-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--pagefind-ui-border);
+  }
+
+  html.dark #inline-search .pagefind-ui__search-input:focus {
+    background-color: #111827; /* gray-900 */
+  }
+
+  /* Clear Button */
+  #inline-search .pagefind-ui__search-clear {
+    right: 2.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    background-color: transparent;
+    color: #9ca3af;
+    z-index: 10;
+  }
+
+  /* Hide default search icon if it exists (usually a ::before on the form) */
+  #inline-search .pagefind-ui__form::before {
+    display: none;
+    content: none;
+  }
+
+  /* Shortcut Hint */
+  #inline-search .pagefind-ui__form::after {
+    content: attr(data-shortcut);
+    position: absolute;
+    right: 2.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: #9ca3af;
+    pointer-events: none;
+    display: block;
+  }
+
+  /* Hide shortcut hint when focusing or typing (optional, but good for avoiding overlap with long text) */
+  #inline-search .pagefind-ui__form:focus-within::after {
+    display: none;
+  }
+
+  /* We actually want the shortcut hint to be text, not the filter icon?
+     The design had filter icon AND shortcut hint.
+     Let's adjust:
+     Left: Search Icon
+     Right: Filter Icon
+     Middle-Right: Shortcut Hint
+  */
+
+  /* Adjusting background images to make room */
+  #inline-search .pagefind-ui__search-input {
+    background-position: 1rem center, calc(100% - 1rem) center;
+  }
+
+  /* Results Drawer */
+  #inline-search .pagefind-ui__drawer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    margin-top: 0.5rem;
+    background: var(--pagefind-ui-background);
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    z-index: 50;
+    border: 1px solid #e5e7eb;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+
+  html.dark #inline-search .pagefind-ui__drawer {
+    border-color: #374151;
+    background: #1f2937;
+  }
+
+  /* Hide drawer when empty */
+  #inline-search .pagefind-ui__hidden {
+    display: none;
+  }
+
+  /* Inline Search Results Styling */
+  #inline-search .pagefind-ui__result {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--pagefind-ui-border);
+    transition: background-color 0.2s;
+  }
+
+  #inline-search .pagefind-ui__result:last-child {
+    border-bottom: none;
+  }
+
+  #inline-search .pagefind-ui__result:hover {
+    background-color: rgba(128, 128, 128, 0.05);
+  }
+
+  #inline-search .pagefind-ui__result-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  #inline-search .pagefind-ui__result-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  #inline-search .pagefind-ui__result-link {
+    color: var(--pagefind-ui-text);
+    text-decoration: none;
+    display: block;
+  }
+
+  #inline-search .pagefind-ui__result-link:hover {
+    color: var(--pagefind-ui-primary);
+  }
+
+  #inline-search .pagefind-ui__result-excerpt {
+    font-size: 0.85rem;
+    color: var(--pagefind-ui-text);
+    opacity: 0.7;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+  }
+
+  #inline-search mark {
+    background-color: transparent;
+    color: var(--pagefind-ui-primary);
+    font-weight: 700;
+    text-decoration: underline;
+  }
+
+  #inline-search .pagefind-ui__message {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    color: var(--pagefind-ui-text);
+    opacity: 0.6;
+    font-weight: 500;
+  }
+
+  #inline-search .pagefind-ui__button {
+    width: 100%;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-top: 1px solid var(--pagefind-ui-border);
+    color: var(--pagefind-ui-primary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  #inline-search .pagefind-ui__button:hover {
+    background-color: rgba(128, 128, 128, 0.05);
+  }
+</style>
