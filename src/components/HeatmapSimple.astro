@@ -4,8 +4,8 @@
  * 不依赖 Svelte，不需要客户端 JS
  */
 import { getPostPath } from '@/i18n/path'
+import { addDays, diffDays, formatDate, getWeekday, isWeekend, subtractDays } from '@/utils/time-simple'
 import { getGitHubContributions } from '@/utils/github-contributions'
-import { addDays, diffDays, formatDate, getWeekday, subtractDays } from '@/utils/time-simple'
 
 interface Props {
   posts: Array<{
@@ -122,11 +122,134 @@ return 'level-0'
   const type = hasPost ? 'post' : 'github'
   return `type-${type}-level-${level}`
 }
+
+// 辅助函数：获取月份标签
+function getMonthLabels(days: HeatmapDay[]) {
+  const months: { index: number; label: string }[] = []
+  let currentMonth = -1
+  let lastLabelIndex = -999
+
+  // 按周遍历（每7天一列）
+  for (let i = 0; i < days.length; i += 7) {
+    const date = days[i].date
+    const month = date.getMonth()
+    const colIndex = Math.floor(i / 7)
+
+    if (month !== currentMonth) {
+      // 只有当距离上一个标签足够远时才显示（避免重叠）
+      if (colIndex - lastLabelIndex >= 2) {
+        months.push({
+          index: colIndex,
+          label: new Intl.DateTimeFormat('en-US', { month: 'short' }).format(date),
+        })
+        lastLabelIndex = colIndex
+      }
+      currentMonth = month
+    }
+  }
+  return months
+}
+
+const firstHalfMonths = getMonthLabels(firstHalf)
+const secondHalfMonths = getMonthLabels(secondHalf)
+
+// 统计数据计算
+let totalContributions = 0
+let maxStreak = 0
+let currentStreak = 0
+let tempStreak = 0
+
+// 按时间顺序遍历所有天数（heatmap 已经是倒序的，需要反过来或者直接处理）
+// heatmap 是从今天(index 0)倒推到一年前。
+// 为了计算 streak，我们最好按时间正序遍历
+const sortedDays = [...heatmap].reverse() // 变为旧 -> 新
+
+// 简单的节假日判断（示例：元旦、劳动节、国庆节）
+// 注意：农历节日（春节、中秋等）需要额外库支持，这里仅作演示
+function isHoliday(date: Date): boolean {
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  // 1.1 元旦, 5.1 劳动节, 10.1 国庆节
+  if ((month === 1 && day === 1) || (month === 5 && day === 1) || (month === 10 && day === 1)) {
+    return true
+  }
+  return false
+}
+
+function isRestDay(date: Date): boolean {
+  return isWeekend(date) || isHoliday(date)
+}
+
+sortedDays.forEach((day) => {
+  const count = day.posts.length + day.githubCount
+  totalContributions += count
+
+  if (count > 0) {
+    tempStreak++
+    if (tempStreak > maxStreak) {
+      maxStreak = tempStreak
+    }
+  }
+ else if (!isRestDay(day.date)) {
+    // 只有在非休息日且无贡献时，才断开 streak
+    // 如果是休息日且无贡献，streak 保持不变（不增加也不清零）
+    tempStreak = 0
+  }
+})
+
+// 计算当前连续打卡
+// sortedDays 是 New -> Old (Nov 22 -> Jan)
+// 我们需要从最新的日期开始往回查
+for (let i = 0; i < sortedDays.length; i++) {
+  const count = sortedDays[i].posts.length + sortedDays[i].githubCount
+  if (count > 0) {
+    currentStreak++
+  }
+ else if (!isRestDay(sortedDays[i].date)) {
+    // 如果是非休息日且无贡献，断开
+    break
+  }
+  // 如果是休息日且无贡献，继续往前找（跳过）
+}
+
+// 统计标签多语言
+const statsLabelsMap: Record<string, { total: string; max: string; current: string }> = {
+  'en': { total: 'Total', max: 'Max Streak', current: 'Current Streak' },
+  'zh': { total: '共计', max: '最长连续', current: '当前连续' },
+  'zh-cn': { total: '共计', max: '最长连续', current: '当前连续' },
+  'zh-tw': { total: '共計', max: '最長連續', current: '當前連續' },
+}
+
+// 简单的 locale 匹配
+const currentLabels = statsLabelsMap[locale?.toLowerCase() || 'en'] || statsLabelsMap.en
 ---
 
 <div class="heatmap-wrapper">
+  <!-- 统计概览 -->
+  <div class="heatmap-stats">
+    <div class="stat-item">
+      <span class="stat-value">{totalContributions}</span>
+      <span class="stat-label">{currentLabels.total}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">{maxStreak}</span>
+      <span class="stat-label">{currentLabels.max}</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value">{currentStreak}</span>
+      <span class="stat-label">{currentLabels.current}</span>
+    </div>
+  </div>
+
   <!-- 后半年（较新的数据） -->
   <div class="heatmap-section">
+    <div class="heatmap-months">
+      {secondHalfMonths.map(month => (
+        <span class="heatmap-month-label" style={`left: ${month.index * 0.875}rem`}>
+          {month.label}
+        </span>
+      ))}
+    </div>
     <div class="heatmap-grid">
       {secondHalf.map((day, index) => {
         const postCount = day.posts.length
@@ -174,6 +297,13 @@ return 'level-0'
 
   <!-- 前半年（较早的数据） -->
   <div class="heatmap-section">
+    <div class="heatmap-months">
+      {firstHalfMonths.map(month => (
+        <span class="heatmap-month-label" style={`left: ${month.index * 0.875}rem`}>
+          {month.label}
+        </span>
+      ))}
+    </div>
     <div class="heatmap-grid">
       {firstHalf.map((day, index) => {
         const postCount = day.posts.length
@@ -295,6 +425,25 @@ window.addEventListener('resize', initTooltipPositioning)
     display: block;
     width: 100%;
     overflow: visible;
+  }
+
+  .heatmap-months {
+    position: relative;
+    height: 1.25rem;
+    margin-bottom: 0.25rem;
+    width: 100%;
+  }
+
+  .heatmap-month-label {
+    position: absolute;
+    font-size: 0.75rem;
+    line-height: 1;
+    color: var(--c-text-secondary); /* Fallback */
+    color: oklch(0.55 0 0); /* Default grey */
+  }
+
+  html.dark .heatmap-month-label {
+    color: oklch(0.7 0 0);
   }
 
   .heatmap-grid {
@@ -456,4 +605,35 @@ window.addEventListener('resize', initTooltipPositioning)
   .tooltip-empty {
     margin-top: 0.25rem;
   }
-</style>
+
+  /* Stats Section */
+  .heatmap-stats {
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+    padding: 0 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.25rem;
+    white-space: nowrap;
+  }
+
+  .stat-value {
+    font-weight: bold;
+    color: var(--c-text-primary);
+  }
+
+  .stat-label {
+    color: var(--c-text-secondary); /* Fallback */
+    color: oklch(0.55 0 0);
+  }
+
+  html.dark .stat-label {
+    color: oklch(0.7 0 0);
+  }
