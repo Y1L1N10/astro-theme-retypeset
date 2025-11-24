@@ -80,12 +80,12 @@ const MarginBottom = isPost && themeConfig.comment?.enabled
         )}
 
         {/* Main Content */}
-        <main class:list={[MarginBottom, 'flex-1 min-w-0 max-w-3xl']}>
+        <main class:list={[MarginBottom, 'flex-1 min-w-0 max-w-4xl']}>
           <slot />
         </main>
 
         {/* Right Sidebar - Navigation */}
-        <aside id="right-sidebar" class="sticky top-20 hidden h-fit w-14rem shrink-0 flex-col gap-8 lg:flex">
+        <aside id="right-sidebar" class="sticky top-20 hidden h-fit w-14rem shrink-0 flex-col gap-8 -mr-48 lg:flex">
           <Header posts={posts} showHeatmap={showHeatmap} />
           <Navbar />
           <Button supportedLangs={supportedLangs} />
