@@ -18,9 +18,34 @@ if (!activities) {
 
 {activities.length > 0 && (
   <div class="activity-stream">
-    <h3 class="mb-4 text-3.5 text-secondary/80 font-bold tracking-wider uppercase">
-      Recent Activity
-    </h3>
+    <div class="mb-4 flex items-center justify-between">
+      <h3 class="text-3.5 text-secondary/80 font-bold tracking-wider uppercase">
+        Activity
+      </h3>
+      <div class="flex gap-3 text-3 text-secondary/40 font-medium">
+        <button
+          class="activity-filter active text-primary transition-colors hover:text-primary"
+          data-filter="all"
+          aria-label="Show all activities"
+        >
+          All
+        </button>
+        <button
+          class="activity-filter transition-colors hover:text-primary"
+          data-filter="blog"
+          aria-label="Show blog posts only"
+        >
+          Post
+        </button>
+        <button
+          class="activity-filter transition-colors hover:text-primary"
+          data-filter="github"
+          aria-label="Show GitHub activities only"
+        >
+          Git
+        </button>
+      </div>
+    </div>
     <div class="flex flex-col">
       {activities.map(activity => (
         <ActivityCard activity={activity} />
@@ -28,3 +53,43 @@ if (!activities) {
     </div>
   </div>
 )}
+
+<script>
+function setupActivityFilter() {
+  const filters = document.querySelectorAll('.activity-filter')
+  const items = document.querySelectorAll('.activity-item')
+
+  if (!filters.length || !items.length)
+    return
+
+  filters.forEach((filter) => {
+    filter.addEventListener('click', (e) => {
+      const target = e.currentTarget as HTMLButtonElement
+
+      // Update active state
+      filters.forEach(f => f.classList.remove('text-primary', 'active'))
+      target.classList.add('text-primary', 'active')
+
+      const type = target.dataset.filter
+
+      items.forEach((item) => {
+        const itemType = (item as HTMLElement).dataset.type
+        // If filter is 'all', show everything
+        // If filter is 'blog', show only 'blog' items
+        // If filter is 'github', show only 'github' items
+        if (type === 'all' || itemType === type) {
+          item.classList.remove('hidden')
+          item.classList.add('flex') // Restore flex display
+        }
+        else {
+          item.classList.add('hidden')
+          item.classList.remove('flex')
+        }
+      })
+    })
+  })
+}
+
+document.addEventListener('astro:page-load', setupActivityFilter)
+setupActivityFilter()
+</script>

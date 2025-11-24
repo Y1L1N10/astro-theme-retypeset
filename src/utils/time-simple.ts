@@ -63,7 +63,21 @@ export function isWeekend(date: Date): boolean {
 export function getRelativeTime(date: Date | string): string {
   const now = new Date()
   const past = new Date(date)
-  const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000)
+  
+  // Handle invalid dates
+  if (isNaN(past.getTime())) {
+    return ''
+  }
+
+  // Calculate difference in seconds
+  // Use Math.abs to handle small clock skew or future dates gracefully, 
+  // though typically we expect past dates.
+  let diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000)
+  
+  // If the date is in the future (negative diff), treat it as 'just now'
+  if (diffInSeconds < 0) {
+    diffInSeconds = 0
+  }
 
   if (diffInSeconds < 60) {
     return 'just now'

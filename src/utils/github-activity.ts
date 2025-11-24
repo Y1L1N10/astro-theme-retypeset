@@ -2,8 +2,8 @@ import { memoize } from '@/utils/cache'
 
 export interface ActivityItem {
   id: string
-  type: 'PushEvent' | 'WatchEvent' | 'PullRequestEvent' | 'CreateEvent' | 'ReleaseEvent'
-  repo: { name: string; url: string }
+  type: 'PushEvent' | 'WatchEvent' | 'PullRequestEvent' | 'CreateEvent' | 'ReleaseEvent' | 'BlogPost'
+  repo: { name: string, url: string }
   payload: any
   created_at: string
 }
@@ -17,10 +17,10 @@ async function _getRecentActivity(username: string): Promise<ActivityItem[]> {
     }
 
     const data = await response.json()
-    
+
     // Filter and format
     const interestingEvents = ['PushEvent', 'WatchEvent', 'PullRequestEvent', 'CreateEvent', 'ReleaseEvent']
-    
+
     const activities = data
       .filter((event: any) => interestingEvents.includes(event.type))
       .map((event: any) => ({
@@ -28,16 +28,17 @@ async function _getRecentActivity(username: string): Promise<ActivityItem[]> {
         type: event.type as ActivityItem['type'],
         repo: {
           name: event.repo.name,
-          url: `https://github.com/${event.repo.name}`
+          url: `https://github.com/${event.repo.name}`,
         },
         payload: event.payload,
-        created_at: event.created_at
+        created_at: event.created_at,
       }))
       // Limit to top 15 to avoid clutter
       .slice(0, 15)
 
     return activities
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`Error fetching GitHub activity for ${username}:`, error)
     return []
   }
