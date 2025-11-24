@@ -1,0 +1,30 @@
+---
+import type { ActivityItem } from '@/utils/github-activity'
+import themeConfig from '@/config'
+import { getRecentActivity } from '@/utils/github-activity'
+import ActivityCard from './ActivityCard.astro'
+
+interface Props {
+  activities?: ActivityItem[]
+}
+
+let { activities } = Astro.props
+
+if (!activities) {
+  const username = themeConfig.site.githubUser || ''
+  activities = username ? await getRecentActivity(username) : []
+}
+---
+
+{activities.length > 0 && (
+  <div class="activity-stream">
+    <h3 class="mb-4 text-3.5 text-secondary/80 font-bold tracking-wider uppercase">
+      Recent Activity
+    </h3>
+    <div class="flex flex-col">
+      {activities.map(activity => (
+        <ActivityCard activity={activity} />
+      ))}
+    </div>
+  </div>
+)}

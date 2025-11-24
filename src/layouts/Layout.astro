@@ -3,6 +3,7 @@ import Button from '@/components/Button.astro'
 import Footer from '@/components/Footer.astro'
 import Header from '@/components/Header.astro'
 import Navbar from '@/components/Navbar.astro'
+import ActivityStream from '@/components/Widgets/ActivityStream.astro'
 import CodeCopyButton from '@/components/Widgets/CodeCopyButton.astro'
 import GithubCard from '@/components/Widgets/GithubCard.astro'
 import ImageZoom from '@/components/Widgets/ImageZoom.astro'
@@ -10,6 +11,7 @@ import MediaEmbed from '@/components/Widgets/MediaEmbed.astro'
 import SoundEffect from '@/components/Widgets/SoundEffect.astro'
 import themeConfig from '@/config'
 import Head from '@/layouts/Head.astro'
+import { getRecentActivity } from '@/utils/github-activity'
 import { getPageInfo } from '@/utils/page'
 import '@/styles/comment.css'
 import '@/styles/extension.css'
@@ -30,6 +32,11 @@ interface Props {
 
 const { postTitle, postDescription, postSlug, supportedLangs = [], posts = [], showHeatmap = false } = Astro.props
 const { isPost } = getPageInfo(Astro.url.pathname)
+
+const username = themeConfig.site.githubUser || ''
+const activities = username ? await getRecentActivity(username) : []
+const showActivityStream = !isPost && activities.length > 0
+
 const fontStyle = themeConfig.global.fontStyle === 'serif' ? 'font-serif' : 'font-sans'
 const MarginBottom = isPost && themeConfig.comment?.enabled
   ? 'mb-10' // Post page with comment
@@ -48,20 +55,37 @@ const MarginBottom = isPost && themeConfig.comment?.enabled
     <div
       class="mx-auto max-w-205.848 min-h-vh w-full min-h-dvh"
       p="x-[min(7.25vw,3.731rem)] y-10"
-      lg="mx-auto my-20 max-w-75rem min-h-full p-0 px-8"
+      lg="mx-auto my-20 max-w-[90vw] min-h-full p-0 px-8"
     >
       <div class="lg:hidden">
         <Header posts={posts} showHeatmap={showHeatmap} />
       </div>
 
-      <div class="relative flex flex-col lg:flex-row lg:gap-12">
+      <div class="relative flex flex-col lg:flex-row lg:gap-8">
         <Navbar class="mb-10.5 lg:hidden" />
 
-        <main class:list={[MarginBottom, 'flex-1 min-w-0']}>
+        {/* Left Sidebar - Activity Stream */}
+        {showActivityStream
+? (
+          <aside
+            id="left-sidebar"
+            class="/* 粘性定位，距离顶部 5rem (20 * 0.25rem) */ /* 默认隐藏 (移动端/小屏幕) */ /* 最大高度为屏幕高度，防止溢出 */ /* 固定宽度 16rem */ /* 防止被 Flex 压缩 */ /* 垂直排列，间距 2rem */ /* 自身顶部对齐，不被拉伸 */ /* 内容过多时显示垂直滚动条 */ /* 隐藏默认滚动条样式 */ /* 负左边距，向左拉动 9.5rem，使其靠左显示 */ /* 在 lg (1024px) 及以上屏幕显示 */ sticky top-20 hidden max-h-[calc(100vh)] w-16rem shrink-0 flex-col self-start gap-8 overflow-y-auto scrollbar-hidden -ml-38 lg:flex"
+          >
+             <ActivityStream activities={activities} />
+          </aside>
+        )
+: (
+          /* 占位符：当 ActivityStream 隐藏时 (如文章页)，保持相同的宽度和负边距，防止布局塌陷 */
+          <div class="hidden w-16rem shrink-0 -ml-38 lg:block" aria-hidden="true"></div>
+        )}
+
+        {/* Main Content */}
+        <main class:list={[MarginBottom, 'flex-1 min-w-0 max-w-3xl']}>
           <slot />
         </main>
 
-        <aside class="sticky top-20 hidden h-fit w-14rem shrink-0 flex-col gap-8 lg:flex">
+        {/* Right Sidebar - Navigation */}
+        <aside id="right-sidebar" class="sticky top-20 hidden h-fit w-14rem shrink-0 flex-col gap-8 lg:flex">
           <Header posts={posts} showHeatmap={showHeatmap} />
           <Navbar />
           <Button supportedLangs={supportedLangs} />
@@ -83,5 +107,10 @@ const MarginBottom = isPost && themeConfig.comment?.enabled
     <GithubCard />
     <MediaEmbed />
     <ImageZoom />
+    <script>
+      import { setupZoom } from '@/utils/zoom'
+
+      document.addEventListener('astro:page-load', setupZoom)
+    </script>
   </body>
 </html>

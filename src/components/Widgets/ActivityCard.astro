@@ -1,0 +1,57 @@
+---
+import type { ActivityItem } from '@/utils/github-activity'
+import { getRelativeTime } from '@/utils/time-simple'
+
+interface Props {
+  activity: ActivityItem
+}
+
+const { activity } = Astro.props
+
+const timeAgo = getRelativeTime(activity.created_at)
+
+const icons = {
+  PushEvent: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M16 2a3 3 0 0 1 2.83 2H21v2h-2.17a3.001 3.001 0 0 1-5.66 0H11v5.17a3.001 3.001 0 0 1 0 5.66V19h2.17a3.001 3.001 0 0 1 5.66 0H21v2h-2.17a3 3 0 0 1-5.66 0H11v1a1 1 0 0 1-2 0v-1H6.83a3 3 0 0 1-5.66 0H0v-2h1.17a3.001 3.001 0 0 1 5.66 0H9V9.17a3.001 3.001 0 0 1 0-5.66V2h2.17A3.001 3.001 0 0 1 16 2z"/></svg>`,
+  WatchEvent: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
+  PullRequestEvent: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M15 5h2a2 2 0 0 1 2 2v8.17a3.001 3.001 0 0 1 2.83 2H24v2h-2.17a3.001 3.001 0 0 1-5.66 0H14v-1a1 1 0 0 1-2 0V7a1 1 0 0 1 2-0zm-9 9H3.83a3.001 3.001 0 0 1-2.66-2V2h2.17a3.001 3.001 0 0 1 5.32 0H11v10a1 1 0 0 1-2 0v2h2.17a3.001 3.001 0 0 1 2.66 2H16v2h-2.17a3.001 3.001 0 0 1-5.66 0H6v-2h2.17a3.001 3.001 0 0 1 2.66-2H6z"/></svg>`,
+  CreateEvent: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2z"/></svg>`,
+  ReleaseEvent: `<svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M12.89 3l1.43 1.41L7.91 10.82l6.41 6.41 6.41-6.41-6.41-6.41 1.41-1.41 6.41 6.41c.78.78.78 2.05 0 2.83l-6.41 6.41c-.78.78-2.05.78-2.83 0l-6.41-6.41c-.78-.78-.78-2.05 0-2.83L12.89 3zM6.5 12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>`,
+}
+
+const actionText = {
+  PushEvent: 'pushed to',
+  WatchEvent: 'starred',
+  PullRequestEvent: 'opened PR in',
+  CreateEvent: 'created',
+  ReleaseEvent: 'released',
+}
+
+const icon = icons[activity.type] || icons.CreateEvent
+const action = actionText[activity.type] || 'acted on'
+---
+
+<div class="flex gap-3 relative group">
+  <!-- Timeline line -->
+  <div class="absolute left-2 top-6 bottom--2 w-px bg-secondary/20 group-last:hidden"></div>
+  
+  <!-- Icon -->
+  <div class="relative z-10 mt-1 flex-shrink-0 w-4 h-4 text-secondary/60 group-hover:text-primary transition-colors" set:html={icon} />
+  
+  <!-- Content -->
+  <div class="flex-1 min-w-0 pb-4 text-3.5 leading-snug">
+    <div class="text-secondary/80">
+      <span class="text-secondary/60">{action}</span>
+      <a 
+        href={activity.repo.url} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        class="font-medium text-primary hover:underline truncate inline-block max-w-full align-bottom"
+      >
+        {activity.repo.name}
+      </a>
+    </div>
+    <div class="text-3 text-secondary/40 mt-0.5 font-time">
+      {timeAgo}
+    </div>
+  </div>
+</div>
