@@ -1,4 +1,4 @@
----
+  ---
 interface Props {
   tags: string[]
 }
@@ -95,6 +95,20 @@ function initTagFilter() {
       children.forEach(c => availableList?.appendChild(c))
     }
   }
+
+  // Check URL for initial tags
+  const urlParams = new URLSearchParams(window.location.search)
+  const initialTag = urlParams.get('tag')
+
+  if (initialTag) {
+    const btn = document.querySelector(`.tag-btn[data-tag="${initialTag}"]`)
+    if (btn) {
+      selectedTags.add(initialTag)
+      moveTag(btn, true)
+    }
+  }
+
+  updateVisibility()
 
   tagBtns.forEach((btn) => {
     btn.addEventListener('click', () => {
