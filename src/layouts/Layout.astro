@@ -32,11 +32,11 @@ interface Props {
 }
 
 const { postTitle, postDescription, postSlug, supportedLangs = [], posts = [], showHeatmap = false } = Astro.props
-const { isPost } = getPageInfo(Astro.url.pathname)
+const { isPost, currentLang } = getPageInfo(Astro.url.pathname)
 
 const username = themeConfig.site.githubUser || ''
 const githubActivities = username ? await getRecentActivity(username) : []
-const postActivities = getPostActivities(posts)
+const postActivities = getPostActivities(posts, currentLang)
 
 const activities = [...githubActivities, ...postActivities]
   .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
