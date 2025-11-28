@@ -1,5 +1,6 @@
 ---
-import TagList from '@/components/TagList.astro'
+import PostList from '@/components/PostList.astro'
+import TagFilter from '@/components/TagFilter.astro'
 import { defaultLocale, moreLocales } from '@/config'
 import Layout from '@/layouts/Layout.astro'
 import { getAllTags, getPosts } from '@/utils/content'
@@ -40,8 +41,16 @@ const allPosts = await getPosts(lang)
   <!-- Decorative Line -->
   <div class="uno-decorative-line" />
   <!-- Tag List -->
-  <TagList
+  <!-- Tag Filter -->
+  <TagFilter
     tags={allTags}
-    lang={lang}
   />
+
+  <!-- Post List -->
+  <div class="mt-10.5">
+    <PostList
+      posts={allPosts}
+      lang={lang}
+    />
+  </div>
 </Layout>

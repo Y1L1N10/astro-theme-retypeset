@@ -28,8 +28,9 @@ export interface Props {
 
     return (
       <li
-        class="mb-5.5"
+        class="post-item mb-5.5"
         lg={isHome ? 'mb-10' : ''}
+        data-tags={post.data.tags.join(',')}
       >
         {/* post title */}
         <h3 class="inline transition-colors hover:c-primary">

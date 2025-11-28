@@ -76,7 +76,7 @@ const MarginBottom = isPost && themeConfig.comment?.enabled
 ? (
           <aside
             id="left-sidebar"
-            class="/* 粘性定位，距离顶部 5rem (20 * 0.25rem) */ /* 默认隐藏 (移动端/小屏幕) */ /* 最大高度为屏幕高度，防止溢出 */ /* 固定宽度 16rem */ /* 防止被 Flex 压缩 */ /* 垂直排列，间距 2rem */ /* 自身顶部对齐，不被拉伸 */ /* 内容过多时显示垂直滚动条 */ /* 隐藏默认滚动条样式 */ /* 负左边距，向左拉动 9.5rem，使其靠左显示 */ /* 在 lg (1024px) 及以上屏幕显示 */ sticky top-20 hidden max-h-[calc(100vh)] w-16rem shrink-0 flex-col self-start gap-8 overflow-y-auto overscroll-contain scrollbar-hidden -ml-38 lg:flex"
+            class="sticky top-20 hidden max-h-[calc(100vh)] w-16rem shrink-0 flex-col self-start gap-8 overflow-y-auto overscroll-contain scrollbar-hidden -ml-38 lg:flex"
           >
              <ActivityStream activities={activities} />
           </aside>
