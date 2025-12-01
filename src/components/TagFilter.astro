@@ -1,0 +1,145 @@
+  ---
+interface Props {
+  tags: string[]
+}
+
+const { tags } = Astro.props
+---
+
+<div class="tag-filter mb-8">
+  <!-- Selected Tags Area -->
+  <div id="selected-tags-container" class="mb-6 hidden">
+    <div class="mb-2 flex items-center justify-between">
+      <span class="text-sm op-50">Selected Tags</span>
+      <button id="clear-tags" class="text-sm op-50 transition-opacity hover:op-100">Clear All</button>
+    </div>
+    <div class="flex flex-wrap gap-x-3 gap-y-3.2" id="selected-tags-list">
+      <!-- Selected tags will be moved here -->
+    </div>
+    <div class="mt-4 uno-decorative-line op-30" />
+  </div>
+
+  <!-- Available Tags Area -->
+  <div class="flex flex-wrap gap-x-3 gap-y-3.2" id="available-tags-list">
+    {tags.map(tag => (
+      <button
+        class="tag-btn group relative inline-block cursor-pointer border border-secondary/25 rounded-full bg-transparent px-3.2 py-0.7 text-inherit ring-secondary/80 transition-[colors,box-shadow] ease-out hover:(border-secondary/80 c-primary font-medium ring-0.2)"
+        data-tag={tag}
+        aria-pressed="false"
+      >
+        <span class="relative z-10">{tag}</span>
+      </button>
+    ))}
+  </div>
+</div>
+
+<script>
+function initTagFilter() {
+  const selectedContainer = document.getElementById('selected-tags-container')
+  const selectedList = document.getElementById('selected-tags-list')
+  const availableList = document.getElementById('available-tags-list')
+  const clearBtn = document.getElementById('clear-tags')
+  const tagBtns = document.querySelectorAll('.tag-btn')
+  const posts = document.querySelectorAll('.post-item')
+
+  const selectedTags = new Set()
+
+  function updateVisibility() {
+    // Toggle container visibility
+    if (selectedTags.size > 0) {
+      selectedContainer?.classList.remove('hidden')
+    }
+    else {
+      selectedContainer?.classList.add('hidden')
+    }
+
+    // Filter posts
+    posts.forEach((post) => {
+      const postTags = (post.getAttribute('data-tags') || '').split(',')
+      if (selectedTags.size === 0) {
+        post.classList.remove('hidden')
+      }
+      else {
+        // OR logic: Show if post has ANY of the selected tags
+        const hasTag = postTags.some(t => selectedTags.has(t))
+        if (hasTag) {
+          post.classList.remove('hidden')
+        }
+        else {
+          post.classList.add('hidden')
+        }
+      }
+    })
+  }
+
+  function moveTag(btn: Element, isSelected: boolean) {
+    if (isSelected) {
+      selectedList?.appendChild(btn)
+      btn.classList.add('border-secondary/80', 'c-primary', 'font-medium', 'ring-0.2')
+      btn.setAttribute('aria-pressed', 'true')
+    }
+    else {
+      // Insert back into available list in alphabetical order or just append?
+      // Simple append is easier, but might mess up order.
+      // Let's try to keep order if possible, but for now append is fine or we can sort.
+      // To keep it simple and fast: just append back to available.
+      availableList?.appendChild(btn)
+      btn.classList.remove('border-secondary/80', 'c-primary', 'font-medium', 'ring-0.2')
+      btn.setAttribute('aria-pressed', 'false')
+
+      // Optional: Sort available list
+      const children = Array.from(availableList?.children || [])
+      children.sort((a, b) => {
+        return (a.textContent || '').localeCompare(b.textContent || '')
+      })
+      children.forEach(c => availableList?.appendChild(c))
+    }
+  }
+
+  // Check URL for initial tags
+  const urlParams = new URLSearchParams(window.location.search)
+  const initialTag = urlParams.get('tag')
+
+  if (initialTag) {
+    const btn = document.querySelector(`.tag-btn[data-tag="${initialTag}"]`)
+    if (btn) {
+      selectedTags.add(initialTag)
+      moveTag(btn, true)
+    }
+  }
+
+  updateVisibility()
+
+  tagBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tag = btn.getAttribute('data-tag')
+      if (!tag)
+        return
+
+      if (selectedTags.has(tag)) {
+        selectedTags.delete(tag)
+        moveTag(btn, false)
+      }
+      else {
+        selectedTags.add(tag)
+        moveTag(btn, true)
+      }
+      updateVisibility()
+    })
+  })
+
+  clearBtn?.addEventListener('click', () => {
+    selectedTags.clear()
+    // Move all buttons back to available
+    const selectedBtns = Array.from(selectedList?.children || [])
+    selectedBtns.forEach(btn => moveTag(btn, false))
+    updateVisibility()
+  })
+}
+
+// Run on load
+initTagFilter()
+
+// Run on view transitions
+document.addEventListener('astro:page-load', initTagFilter)
+</script>

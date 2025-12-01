@@ -1,0 +1,107 @@
+---
+import { getCollection } from 'astro:content'
+import ResourceCard from '@/components/ResourceCard.astro'
+import { defaultLocale, moreLocales } from '@/config'
+import { ui } from '@/i18n/ui'
+import Layout from '@/layouts/Layout.astro'
+import { getPosts } from '@/utils/content'
+
+export async function getStaticPaths() {
+  type PathItem = {
+    params: { shares: string }
+    props: { lang: string }
+  }
+
+  const paths: PathItem[] = []
+
+  // Default locale
+  paths.push({
+    params: { shares: 'shares/' },
+    props: { lang: defaultLocale },
+  })
+
+  // More locales
+  moreLocales.forEach((lang: string) => {
+    paths.push({
+      params: { shares: `${lang}/shares/` },
+      props: { lang },
+    })
+  })
+
+  return paths
+}
+
+const { lang } = Astro.props
+const currentUI = ui[lang as keyof typeof ui] ?? {}
+
+const allShares = await getCollection('shares')
+const shares = allShares
+
+const posts = await getPosts(lang)
+
+// Get unique categories
+const categories = ['All', ...new Set(shares.map(share => share.data.category))]
+---
+
+<Layout posts={posts} showHeatmap={true} postTitle={currentUI.shares}>
+  <div class="mb-8">
+    <h1 class="mb-4 text-3xl font-bold">{currentUI.shares}</h1>
+    <p class="mb-6 text-secondary/80">
+      {lang === 'zh' ? '收集的一些好用的工具、文章、音乐等资源。' : 'A collection of useful tools, articles, music, and more.'}
+    </p>
+
+    <!-- Category Filter -->
+    <div class="mb-8 flex flex-wrap gap-2" id="category-filter">
+      {categories.map(category => (
+        <button
+          class="rounded-full bg-secondary/5 px-4 py-1.5 text-sm text-secondary font-medium transition-colors data-[active=true]:bg-primary hover:bg-primary/10 data-[active=true]:text-white hover:text-primary"
+          data-category={category}
+          data-active={category === 'All' ? 'true' : 'false'}
+        >
+          {category}
+        </button>
+      ))}
+    </div>
+
+    <!-- Grid -->
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2" id="resources-grid">
+      {shares.map(share => (
+        <ResourceCard {...share.data} />
+      ))}
+    </div>
+  </div>
+</Layout>
+
+<script>
+function initFilter() {
+  const filterButtons = document.querySelectorAll('#category-filter button')
+  const resources = document.querySelectorAll('.resource-card')
+
+  if (!filterButtons.length)
+    return
+
+  filterButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      // Update active state
+      filterButtons.forEach(b => b.setAttribute('data-active', 'false'))
+      btn.setAttribute('data-active', 'true')
+
+      const category = btn.getAttribute('data-category')
+
+      resources.forEach((resource) => {
+        const resourceCategory = resource.getAttribute('data-category')
+        if (category === 'All' || resourceCategory === category) {
+          (resource as HTMLElement).style.display = 'flex'
+        }
+        else {
+          (resource as HTMLElement).style.display = 'none'
+        }
+      })
+    })
+  })
+}
+
+initFilter()
+
+document.addEventListener('astro:page-load', initFilter)
+</script>

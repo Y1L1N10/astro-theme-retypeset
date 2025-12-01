@@ -2,7 +2,7 @@
 import type { CollectionEntry } from 'astro:content'
 import PinIcon from '@/assets/icons/pin-icon.svg'
 import PostDate from '@/components/PostDate.astro'
-import { getPostPath } from '@/i18n/path'
+import { getLocalizedPath, getPostPath } from '@/i18n/path'
 import { getPostDescription } from '@/utils/description'
 import { isHomePage } from '@/utils/page'
 
@@ -28,29 +28,54 @@ export interface Props {
 
     return (
       <li
-        class="mb-5.5"
+        class="post-item mb-5.5"
         lg={isHome ? 'mb-10' : ''}
+        data-tags={post.data.tags.join(',')}
       >
-        {/* post title */}
-        <h3 class="inline transition-colors hover:c-primary">
-          <a
-            class="cjk:tracking-0.02em"
-            lg={isHome ? 'font-medium text-4.5' : ''}
-            href={getPostPath(slug, lang)}
-            transition:name={`post-${slug}${lang ? `-${lang}` : ''}`}
-            data-disable-theme-transition
-          >
-            {post.data.title}
-          </a>
-          {/* pinned icon */}
-          {pinned && (
-            <PinIcon
-              aria-hidden="true"
-              class="ml-0.25em inline-block aspect-square w-0.98em translate-y--0.1em lg:(w-1.05em translate-y--0.15em)"
-              fill="currentColor"
-            />
-          )}
-        </h3>
+        <div class="flex items-baseline justify-between">
+          <div class="flex-1">
+            {/* post title */}
+            <h3 class="inline transition-colors hover:c-primary">
+              <a
+                class="cjk:tracking-0.02em"
+                lg={isHome ? 'font-medium text-4.5' : ''}
+                href={getPostPath(slug, lang)}
+                transition:name={`post-${slug}${lang ? `-${lang}` : ''}`}
+                data-disable-theme-transition
+              >
+                {post.data.title}
+              </a>
+              {/* pinned icon */}
+              {pinned && (
+                <PinIcon
+                  aria-hidden="true"
+                  class="ml-0.25em inline-block aspect-square w-0.98em translate-y--0.1em lg:(w-1.05em translate-y--0.15em)"
+                  fill="currentColor"
+                />
+              )}
+            </h3>
+
+            {/* desktop post time */}
+            <div class="hidden text-3.65 font-time lg:(ml-2.5 inline)">
+              <PostDate
+                date={post.data.published}
+                minutes={post.remarkPluginFrontmatter.minutes}
+              />
+            </div>
+          </div>
+
+          {/* tags */}
+          <div class="ml-4 hidden shrink-0 gap-2 text-3.5 text-secondary/50 lg:flex">
+            {post.data.tags.map(tag => (
+              <a
+                href={`${getLocalizedPath('/tags/', lang)}?tag=${tag}`}
+                class="transition-colors hover:text-primary"
+              >
+                #{tag}
+              </a>
+            ))}
+          </div>
+        </div>
 
         {/* mobile post time */}
         <div
@@ -58,14 +83,6 @@ export interface Props {
           transition:name={`time-${slug}${lang ? `-${lang}` : ''}`}
           data-disable-theme-transition
         >
-          <PostDate
-            date={post.data.published}
-            minutes={post.remarkPluginFrontmatter.minutes}
-          />
-        </div>
-
-        {/* desktop post time */}
-        <div class="hidden text-3.65 font-time lg:(ml-2.5 inline)">
           <PostDate
             date={post.data.published}
             minutes={post.remarkPluginFrontmatter.minutes}
