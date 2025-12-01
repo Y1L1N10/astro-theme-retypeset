@@ -1,0 +1,24 @@
+name: Daily Content Update
+
+on:
+  schedule:
+    # 每天 UTC 时间 00:00 (北京时间 08:00) 触发
+    - cron: '0 0 * * *'
+  # 允许在 GitHub Actions 界面手动触发
+  workflow_dispatch:
+
+jobs:
+  trigger-vercel-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel Deploy Hook
+        run: |
+          if [ -n "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+            echo "Triggering Vercel deployment..."
+            curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
+            echo "Request sent."
+          else
+            echo "Error: VERCEL_DEPLOY_HOOK secret is missing."
+            echo "Please add VERCEL_DEPLOY_HOOK to your repository secrets."
+            exit 1
+          fi
