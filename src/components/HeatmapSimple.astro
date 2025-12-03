@@ -40,11 +40,11 @@ if (startDate) {
   days = 52 * 7 // 固定显示52周(一年)
 }
  else {
-  // 默认模式：从今天对齐到周六后往前显示一年
+  // 默认模式：从今天对齐到本周六（包含今天所在的整周）
   const weekday = getWeekday(now)
-  // 如果今天是周六，就用今天；否则用上周六
-  const daysToLastSaturday = weekday === 6 ? 0 : weekday + 1
-  start = subtractDays(now, daysToLastSaturday)
+  // 计算距离本周六还有几天 (0=周日...6=周六)
+  const daysToNextSaturday = 6 - weekday
+  start = addDays(now, daysToNextSaturday)
   days = 52 * 7 // 固定显示52周(一年)
 }
 
@@ -205,15 +205,28 @@ sortedDays.forEach((day) => {
 // sortedDays 是 New -> Old (Nov 22 -> Jan)
 // 我们需要从最新的日期开始往回查
 for (let i = 0; i < sortedDays.length; i++) {
-  const count = sortedDays[i].posts.length + sortedDays[i].githubCount
+  const day = sortedDays[i]
+  const diff = diffDays(day.date, now)
+  
+  // 跳过未来的日期
+  if (diff > 0) {
+    continue
+  }
+
+  const count = day.posts.length + day.githubCount
   if (count > 0) {
     currentStreak++
-  }
- else if (!isRestDay(sortedDays[i].date)) {
+  } else {
+    // 如果是今天且无贡献，不算断签（允许今天还没开始）
+    if (diff === 0) {
+      continue
+    }
     // 如果是非休息日且无贡献，断开
-    break
+    if (!isRestDay(day.date)) {
+      break
+    }
+    // 如果是休息日且无贡献，继续往前找（跳过）
   }
-  // 如果是休息日且无贡献，继续往前找（跳过）
 }
 
 // 统计标签多语言
