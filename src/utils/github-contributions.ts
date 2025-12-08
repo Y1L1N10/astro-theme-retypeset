@@ -18,18 +18,19 @@ async function _getGitHubContributions(username: string): Promise<Map<string, nu
       console.error(`Failed to fetch GitHub contributions for ${username}: ${response.statusText}`)
       return new Map()
     }
-    
+
     const data: GitHubData = await response.json()
     const contributionMap = new Map<string, number>()
-    
+
     data.contributions.forEach((item) => {
       if (item.count > 0) {
         contributionMap.set(item.date, item.count)
       }
     })
-    
+
     return contributionMap
-  } catch (error) {
+  }
+  catch (error) {
     console.error(`Error fetching GitHub contributions for ${username}:`, error)
     return new Map()
   }
