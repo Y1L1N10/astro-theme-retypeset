@@ -334,129 +334,164 @@
       border-right-color: oklch(var(--un-preset-theme-colors-primary-content) / 0.95);
     }
   }
+  /* TOC Collapsed State: Only affect the fixed sidebar position via CSS */
+  @media (min-width: 1280px) {
+    :global(body.toc-collapsed) #post-action-sidebar {
+      left: max(2rem, calc(50vw - 46rem));
+    }
+
+    :global(body.toc-collapsed) #toc-container {
+      display: none !important;
+    }
+  }
+
+  #post-action-sidebar {
+    transition: left 0.3s ease-out;
+  }
 </style>
 
 <script>
- function setupPostActions() {
-   const showSuccess = (btn: HTMLElement) => {
-     btn.classList.add('success')
-     setTimeout(() => {
-       btn.classList.remove('success')
-     }, 2000)
-   }
+function setupPostActions() {
+  const showSuccess = (btn: HTMLElement) => {
+    btn.classList.add('success')
+    setTimeout(() => {
+      btn.classList.remove('success')
+    }, 2000)
+  }
 
-   const animateBtn = (btn: HTMLElement, animationClass: string) => {
-     btn.classList.add(animationClass)
-     btn.classList.add('success') // Trigger ripple
-     setTimeout(() => {
-       btn.classList.remove(animationClass)
-       btn.classList.remove('success')
-     }, 1000)
-   }
+  const animateBtn = (btn: HTMLElement, animationClass: string) => {
+    btn.classList.add(animationClass)
+    btn.classList.add('success') // Trigger ripple
+    setTimeout(() => {
+      btn.classList.remove(animationClass)
+      btn.classList.remove('success')
+    }, 1000)
+  }
 
-   // Share
-   const shareBtn = document.getElementById('action-share')
-   shareBtn?.addEventListener('click', async () => {
-     try {
-       await navigator.clipboard.writeText(window.location.href)
-       showSuccess(shareBtn)
-     }
- catch (err) {
-       console.error('Failed to copy:', err)
-     }
-   })
+  // Share (Keep existing)
+  const shareBtn = document.getElementById('action-share')
+  shareBtn?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      showSuccess(shareBtn)
+    }
+    catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  })
 
-   // Tags
-   const tagsBtn = document.getElementById('action-tags')
-   tagsBtn?.addEventListener('click', () => {
-     document.getElementById('post-tags')?.scrollIntoView({ behavior: 'smooth' })
-     animateBtn(tagsBtn, 'animate-shake')
-   })
+  // Tags (Keep existing)
+  const tagsBtn = document.getElementById('action-tags')
+  tagsBtn?.addEventListener('click', () => {
+    document.getElementById('post-tags')?.scrollIntoView({ behavior: 'smooth' })
+    animateBtn(tagsBtn, 'animate-shake')
+  })
 
-   // Comment
-   const commentBtn = document.getElementById('action-comment')
-   commentBtn?.addEventListener('click', () => {
-     document.getElementById('post-comment')?.scrollIntoView({ behavior: 'smooth' })
-     animateBtn(commentBtn, 'animate-pulse')
-   })
+  // Comment (Keep existing)
+  const commentBtn = document.getElementById('action-comment')
+  commentBtn?.addEventListener('click', () => {
+    document.getElementById('post-comment')?.scrollIntoView({ behavior: 'smooth' })
+    animateBtn(commentBtn, 'animate-pulse')
+  })
 
-   // TOC Toggle
-   const tocBtn = document.getElementById('action-toc')
-   const tocToggle = document.getElementById('toc-toggle') as HTMLInputElement | null
+  // TOC Toggle
+  const tocBtn = document.getElementById('action-toc')
+  const tocToggle = document.getElementById('toc-toggle') as HTMLInputElement | null
+  // Robustly find sidebar target (placeholder OR real sidebar if layout state differs)
+  const sidebarTarget = (document.getElementById('left-sidebar-placeholder') || document.getElementById('left-sidebar')) as HTMLElement | null
+  const mainContent = document.getElementById('main-content')
+  const TOC_COLLAPSED_KEY = 'toc-collapsed'
 
-   // Initialize TOC state based on checkbox (default open on desktop means checkbox unchecked)
-   // If checkbox is checked -> TOC is closed -> Button should show List (inactive)
-   // If checkbox is unchecked -> TOC is open -> Button should show Close (active)
-   if (tocBtn && tocToggle) {
-     const updateTOCState = () => {
-       if (!tocToggle.checked) {
-         tocBtn.classList.add('active') // Open = Active (Show Close Icon)
-       }
- else {
-         tocBtn.classList.remove('active') // Closed = Inactive (Show List Icon)
-       }
-     }
+  const updateTOCState = () => {
+    const isCollapsed = localStorage.getItem(TOC_COLLAPSED_KEY) === 'true'
 
-     // Initial state
-     updateTOCState()
+    // 1. Button State
+    if (isCollapsed) {
+      document.body.classList.add('toc-collapsed')
+      tocBtn?.classList.remove('active') // Collapsed = List Icon
+      if (tocToggle)
+        tocToggle.checked = true
+    }
+    else {
+      document.body.classList.remove('toc-collapsed')
+      tocBtn?.classList.add('active') // Expanded = Close Icon
+      if (tocToggle)
+        tocToggle.checked = false
+    }
 
-     tocBtn.addEventListener('click', () => {
-       tocToggle.checked = !tocToggle.checked
-       tocToggle.dispatchEvent(new Event('change'))
-       updateTOCState()
-     })
-   }
+    // 2. Layout Manipulation
+    if (sidebarTarget && mainContent) {
+      if (isCollapsed) {
+        sidebarTarget.classList.remove('w-16rem', '-ml-38')
+        sidebarTarget.classList.add('w-8', '-ml-32')
 
-   // Top & Progress
-   const topBtn = document.getElementById('action-top')
-   const progressCircle = topBtn?.querySelector('.progress-ring-circle') as SVGCircleElement | null
-   const progressText = topBtn?.querySelector('.progress-text')
+        mainContent.classList.remove('max-w-4xl')
+        mainContent.classList.add('max-w-5xl', '2xl:max-w-6xl', '-ml-2')
+      }
+      else {
+        sidebarTarget.classList.add('w-16rem', '-ml-38')
+        sidebarTarget.classList.remove('w-8', '-ml-32')
 
-   if (topBtn && progressCircle && progressText) {
-     const radius = progressCircle.r.baseVal.value
-     const circumference = radius * 2 * Math.PI
+        mainContent.classList.add('max-w-4xl')
+        mainContent.classList.remove('max-w-5xl', '2xl:max-w-6xl', '-ml-2')
+      }
+    }
+  }
 
-     progressCircle.style.strokeDasharray = `${circumference} ${circumference}`
-     progressCircle.style.strokeDashoffset = `${circumference}`
+  // Initialize
+  updateTOCState()
 
-     const setProgress = (percent: number) => {
-       const offset = circumference - (percent / 100) * circumference
-       progressCircle.style.strokeDashoffset = `${offset}`
-       progressText.textContent = `${Math.round(percent)}`
-     }
+  if (tocBtn) {
+    tocBtn.addEventListener('click', () => {
+      const isCurrentCollapsed = localStorage.getItem(TOC_COLLAPSED_KEY) === 'true'
+      localStorage.setItem(TOC_COLLAPSED_KEY, (!isCurrentCollapsed).toString())
+      updateTOCState()
+    })
+  }
 
-     const onScroll = () => {
-       const scrollTop = window.scrollY
-       const docHeight = document.documentElement.scrollHeight - window.innerHeight
-       const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0
-       const safePercent = Math.min(100, Math.max(0, scrollPercent))
-       setProgress(safePercent)
+  // Top & Progress (Keep existing logic...)
+  const topBtn = document.getElementById('action-top')
+  const progressCircle = topBtn?.querySelector('.progress-ring-circle') as SVGCircleElement | null
+  const progressText = topBtn?.querySelector('.progress-text')
 
-       // Toggle visibility based on scroll position
-       if (scrollTop > 0) {
-         topBtn.classList.remove('opacity-0', 'invisible')
-       }
- else {
-         topBtn.classList.add('opacity-0', 'invisible')
-       }
-     }
+  if (topBtn && progressCircle && progressText) {
+    const radius = progressCircle.r.baseVal.value
+    const circumference = radius * 2 * Math.PI
+    progressCircle.style.strokeDasharray = `${circumference} ${circumference}`
+    progressCircle.style.strokeDashoffset = `${circumference}`
 
-     window.addEventListener('scroll', onScroll, { passive: true })
-     onScroll()
+    const setProgress = (percent: number) => {
+      const offset = circumference - (percent / 100) * circumference
+      progressCircle.style.strokeDashoffset = `${offset}`
+      progressText.textContent = `${Math.round(percent)}`
+    }
 
-     // Cleanup
-     document.addEventListener('astro:before-swap', () => {
-       window.removeEventListener('scroll', onScroll)
-     }, { once: true })
+    const onScroll = () => {
+      const scrollTop = window.scrollY
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight
+      const scrollPercent = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0
+      setProgress(Math.min(100, Math.max(0, scrollPercent)))
+      topBtn.classList.toggle('opacity-0', scrollTop <= 0)
+      topBtn.classList.toggle('invisible', scrollTop <= 0)
+    }
 
-     topBtn.addEventListener('click', () => {
-       window.scrollTo({ top: 0, behavior: 'smooth' })
-       animateBtn(topBtn, 'animate-jump')
-     })
-   }
- }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    document.addEventListener('astro:before-swap', () => window.removeEventListener('scroll', onScroll), { once: true })
+    topBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      animateBtn(topBtn, 'animate-jump')
+    })
+  }
+}
 
- document.addEventListener('astro:page-load', setupPostActions)
- setupPostActions()
+// Apply state immediately to prevent flash (optional, but good practice)
+const TOC_COLLAPSED_KEY = 'toc-collapsed'
+if (typeof localStorage !== 'undefined' && localStorage.getItem(TOC_COLLAPSED_KEY) === 'true') {
+  document.body.classList.add('toc-collapsed')
+}
+
+document.addEventListener('astro:page-load', setupPostActions)
+setupPostActions()
 </script>
 ```
