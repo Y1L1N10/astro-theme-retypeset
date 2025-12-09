@@ -24,16 +24,12 @@ function handleBackButtonClick(e: MouseEvent) {
     return
   }
 
-  // Navigate back if history exists
-  if (window.history.length > 1) {
-    window.history.back()
-    return
-  }
-
-  // Fallback to homepage
+  // Always navigate to homepage to avoid just reverting internal state changes (anchors, etc.)
   const siteTitleLink = document.getElementById('site-title-link')
   if (siteTitleLink) {
     siteTitleLink.click()
+  } else {
+    window.location.href = '/'
   }
 }
 
