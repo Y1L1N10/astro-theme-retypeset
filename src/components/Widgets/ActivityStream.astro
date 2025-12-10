@@ -17,39 +17,72 @@ if (!activities) {
 ---
 
 {activities.length > 0 && (
-  <div class="activity-stream">
-    <div class="mb-4 flex items-center justify-between">
-      <h3 class="text-3.5 text-secondary/80 font-bold tracking-wider uppercase">
-        Activity
-      </h3>
-      <div class="flex gap-3 text-3 text-secondary/40 font-medium">
-        <button
-          class="activity-filter active text-primary transition-colors hover:text-primary"
-          data-filter="all"
-          aria-label="Show all activities"
-        >
-          All
-        </button>
-        <button
-          class="activity-filter transition-colors hover:text-primary"
-          data-filter="blog"
-          aria-label="Show blog posts only"
-        >
-          Post
-        </button>
-        <button
-          class="activity-filter transition-colors hover:text-primary"
-          data-filter="github"
-          aria-label="Show GitHub activities only"
-        >
-          Git
-        </button>
+  <div class="activity-stream h-full">
+    {/* Full Content View */}
+    <div id="activity-content" class="h-full flex flex-col transition-opacity duration-300">
+      <div class="mb-4 flex items-center justify-between">
+        <h3 class="text-3.5 text-secondary/80 font-bold tracking-wider uppercase">
+          Activity
+        </h3>
+        <div class="flex items-center gap-3">
+          <div class="flex gap-3 text-3 text-secondary/40 font-medium">
+            <button
+              class="activity-filter active text-primary transition-colors hover:text-primary"
+              data-filter="all"
+              aria-label="Show all activities"
+            >
+              All
+            </button>
+            <button
+              class="activity-filter transition-colors hover:text-primary"
+              data-filter="blog"
+              aria-label="Show blog posts only"
+            >
+              Post
+            </button>
+            <button
+              class="activity-filter transition-colors hover:text-primary"
+              data-filter="github"
+              aria-label="Show GitHub activities only"
+            >
+              Git
+            </button>
+          </div>
+          <button
+            id="activity-collapse-btn"
+            class="ml-1 text-secondary/40 transition-colors hover:text-primary"
+            aria-label="Collapse activity panel"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="flex flex-col gap-0">
+        {activities.map(activity => (
+          <ActivityCard activity={activity} />
+        ))}
       </div>
     </div>
-    <div class="flex flex-col">
-      {activities.map(activity => (
-        <ActivityCard activity={activity} />
-      ))}
+
+    {/* Collapsed View (Vertical) */}
+    <div id="activity-collapsed-view" class="hidden h-full flex-col items-center pt-0 opacity-0 transition-opacity duration-300">
+        <button
+          id="activity-expand-btn"
+          class="p-1 text-secondary/40 transition-colors hover:text-primary"
+          aria-label="Expand activity panel"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+          </svg>
+        </button>
+        <div
+          class="[writing-mode:vertical-rl] mt-6 flex rotate-180 cursor-pointer select-none items-center justify-center text-3.5 text-secondary/40 font-bold tracking-wider uppercase transition-colors hover:text-primary"
+          onclick="document.getElementById('activity-expand-btn').click()"
+        >
+          Activity
+        </div>
     </div>
   </div>
 )}
@@ -90,6 +123,76 @@ function setupActivityFilter() {
   })
 }
 
-document.addEventListener('astro:page-load', setupActivityFilter)
+function setupActivityCollapse() {
+  const collapseBtn = document.getElementById('activity-collapse-btn') as HTMLElement
+  const expandBtn = document.getElementById('activity-expand-btn') as HTMLElement
+  const sidebar = document.getElementById('left-sidebar') as HTMLElement
+  const mainContent = document.getElementById('main-content') as HTMLElement
+  const content = document.getElementById('activity-content') as HTMLElement
+  const collapsedView = document.getElementById('activity-collapsed-view') as HTMLElement
+
+  if (!collapseBtn || !expandBtn || !sidebar || !mainContent || !content || !collapsedView)
+    return
+
+  const COLLAPSE_KEY = 'activity-panel-collapsed'
+
+  function setCollapsed(collapsed: boolean) {
+    if (collapsed) {
+      // Sidebar State
+      sidebar.classList.remove('w-16rem', '-ml-38')
+      sidebar.classList.add('w-8', '-ml-32') // Adjust width and keep negative margin for "hanging" look
+
+      // Main Content State
+      mainContent.classList.remove('max-w-4xl')
+      mainContent.classList.add('max-w-5xl', '2xl:max-w-6xl', '-ml-2', 'min-[1920px]:max-w-[2000px]') // Expand main content smoothly
+
+      // Internal Views
+      content.classList.add('hidden', 'opacity-0')
+      content.classList.remove('flex')
+
+      collapsedView.classList.remove('hidden', 'opacity-0')
+      collapsedView.classList.add('flex')
+
+      localStorage.setItem(COLLAPSE_KEY, 'true')
+    }
+    else {
+      // Sidebar State
+      sidebar.classList.add('w-16rem', '-ml-38')
+      sidebar.classList.remove('w-8', '-ml-32')
+
+      // Main Content State
+      mainContent.classList.add('max-w-4xl')
+      mainContent.classList.remove('max-w-5xl', '2xl:max-w-6xl', '-ml-2', 'min-[1920px]:max-w-[2000px]')
+
+      // Internal Views
+      content.classList.remove('hidden', 'opacity-0')
+      content.classList.add('flex')
+
+      collapsedView.classList.add('hidden', 'opacity-0')
+      collapsedView.classList.remove('flex')
+
+      localStorage.setItem(COLLAPSE_KEY, 'false')
+    }
+  }
+
+  // Initial State
+  const storedState = localStorage.getItem(COLLAPSE_KEY)
+  const isCollapsed = storedState === 'true'
+  // Apply immediately without transition for initial load?
+  // Maybe better to wait for hydration but might cause layout shift.
+  // Logic works fine either way, transitions are handled by CSS classes added in Layout.astro.
+  setCollapsed(isCollapsed)
+
+  collapseBtn.addEventListener('click', () => setCollapsed(true))
+  expandBtn.addEventListener('click', () => setCollapsed(false))
+}
+
+document.addEventListener('astro:page-load', () => {
+  setupActivityFilter()
+  setupActivityCollapse()
+})
+
+// Run on initial load just in case (though astro:page-load handles most cases)
 setupActivityFilter()
+setupActivityCollapse()
 </script>
