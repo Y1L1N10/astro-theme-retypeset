@@ -3,7 +3,7 @@
 
 <div
   id="post-action-sidebar"
-  class="fixed left-[calc(50vw-33rem)] top-1/2 z-10 hidden flex-col gap-4 min-[1920px]:left-[calc(50vw-44rem)] xl:flex -translate-y-1/2"
+  class="fixed z-10 hidden flex-col gap-4 lg:bottom-20 lg:left-6 lg:top-auto min-[1920px]:left-[calc(50vw-44rem)] xl:left-[calc(50vw-33rem)] xl:top-1/2 lg:flex lg:translate-y-0 xl:-translate-y-1/2"
 > <!-- TOC Toggle Button -->
   <button
     id="action-toc"
@@ -428,29 +428,12 @@ function setupPostActions() {
         mainContent.classList.add('max-w-5xl', '2xl:max-w-6xl', '-ml-2')
       }
       else {
-        // On ultra-wide screens, do not compress content even if TOC is expanded
-        // But still toggle the sidebar spacer to ensure consistency if needed?
-        // Actually, if we want "No Compression", we want the Layout to look like "Collapsed" (Wide Content)
-        // just with the TOC visible (fixed overlay).
-        const isUltraWide = window.innerWidth >= 1536
+        // Standard behavior: Sidebar Expanded -> Pushes Content Right
+        sidebarTarget.classList.add('w-16rem', '-ml-38')
+        sidebarTarget.classList.remove('w-8', '-ml-32')
 
-        if (isUltraWide) {
-          // Treat layout as 'Collapsed' (Expanded Content)
-          // But ensure we don't go TOO wide to overlap floating elements
-          sidebarTarget.classList.remove('w-16rem', '-ml-38')
-          sidebarTarget.classList.add('w-8', '-ml-32')
-
-          mainContent.classList.remove('max-w-4xl')
-          mainContent.classList.add('max-w-5xl', '2xl:max-w-6xl', '-ml-2')
-        }
-        else {
-          // Standard behavior for smaller screens
-          sidebarTarget.classList.add('w-16rem', '-ml-38')
-          sidebarTarget.classList.remove('w-8', '-ml-32')
-
-          mainContent.classList.add('max-w-4xl')
-          mainContent.classList.remove('max-w-5xl', '2xl:max-w-6xl', '-ml-2')
-        }
+        mainContent.classList.add('max-w-4xl')
+        mainContent.classList.remove('max-w-5xl', '2xl:max-w-6xl', '-ml-2')
       }
     }
   }

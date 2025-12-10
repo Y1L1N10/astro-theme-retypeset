@@ -77,14 +77,14 @@ const MarginBottom = isPost && themeConfig.comment?.enabled
 ? (
           <aside
             id="left-sidebar"
-            class="sticky top-20 hidden max-h-[calc(100vh)] w-16rem shrink-0 flex-col self-start gap-8 overflow-y-auto overscroll-contain transition-[width,margin,max-width] duration-300 ease-in-out scrollbar-hidden -ml-38 lg:flex"
+            class="sticky top-20 hidden max-h-[calc(100vh)] w-16rem shrink-0 flex-col self-start gap-8 overflow-y-auto overscroll-contain transition-[width,margin,max-width] duration-300 ease-in-out scrollbar-hidden -ml-38 xl:flex"
           >
              <ActivityStream activities={activities} />
           </aside>
         )
 : (
           /* 占位符：当 ActivityStream 隐藏时 (如文章页)，保持相同的宽度和负边距，防止布局塌陷 */
-          <div id="left-sidebar-placeholder" class="hidden w-16rem shrink-0 transition-[width,margin] duration-300 ease-in-out -ml-38 lg:block" aria-hidden="true"></div>
+          <div id="left-sidebar-placeholder" class="hidden w-16rem shrink-0 transition-[width,margin] duration-300 ease-in-out -ml-38 xl:block" aria-hidden="true"></div>
         )}
 
         {/* Main Content */}
