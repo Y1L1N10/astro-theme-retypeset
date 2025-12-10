@@ -60,7 +60,8 @@ const MarginBottom = isPost && themeConfig.comment?.enabled
   <Head {postTitle} {postDescription} {postSlug} />
   <body>
     <div
-      class="mx-auto max-w-205.848 min-h-vh w-full min-h-dvh"
+      id="app-container"
+      class="mx-auto max-w-205.848 min-h-vh w-full min-h-dvh min-[1920px]:max-w-[min(90vw,2400px)]"
       p="x-[min(7.25vw,3.731rem)] y-10"
       lg="mx-auto my-20 max-w-[min(90vw,1440px)] min-h-full p-0 px-8"
     >

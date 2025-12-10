@@ -134,7 +134,7 @@ function setupActivityCollapse() {
   if (!collapseBtn || !expandBtn || !sidebar || !mainContent || !content || !collapsedView)
     return
 
-  const COLLAPSE_KEY = 'activity-panel-collapsed'
+  const COLLAPSE_KEY = 'activity-panel-collapsed-v2'
 
   function setCollapsed(collapsed: boolean) {
     if (collapsed) {
@@ -144,7 +144,7 @@ function setupActivityCollapse() {
 
       // Main Content State
       mainContent.classList.remove('max-w-4xl')
-      mainContent.classList.add('max-w-5xl', '2xl:max-w-6xl', '-ml-2') // Expand main content smoothly
+      mainContent.classList.add('max-w-5xl', '2xl:max-w-6xl', '-ml-2', 'min-[1920px]:max-w-[2000px]') // Expand main content smoothly
 
       // Internal Views
       content.classList.add('hidden', 'opacity-0')
@@ -162,7 +162,7 @@ function setupActivityCollapse() {
 
       // Main Content State
       mainContent.classList.add('max-w-4xl')
-      mainContent.classList.remove('max-w-5xl', '2xl:max-w-6xl', '-ml-2')
+      mainContent.classList.remove('max-w-5xl', '2xl:max-w-6xl', '-ml-2', 'min-[1920px]:max-w-[2000px]')
 
       // Internal Views
       content.classList.remove('hidden', 'opacity-0')
@@ -177,7 +177,7 @@ function setupActivityCollapse() {
 
   // Initial State
   const storedState = localStorage.getItem(COLLAPSE_KEY)
-  const isCollapsed = storedState === null ? true : storedState === 'true'
+  const isCollapsed = storedState === 'true'
   // Apply immediately without transition for initial load?
   // Maybe better to wait for hydration but might cause layout shift.
   // Logic works fine either way, transitions are handled by CSS classes added in Layout.astro.

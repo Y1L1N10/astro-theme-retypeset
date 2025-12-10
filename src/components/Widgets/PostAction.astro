@@ -3,7 +3,7 @@
 
 <div
   id="post-action-sidebar"
-  class="fixed left-[calc(50vw-33rem)] top-1/2 z-10 hidden flex-col gap-4 xl:flex -translate-y-1/2"
+  class="fixed left-[calc(50vw-33rem)] top-1/2 z-10 hidden flex-col gap-4 min-[1920px]:left-[calc(50vw-44rem)] xl:flex -translate-y-1/2"
 > <!-- TOC Toggle Button -->
   <button
     id="action-toc"
@@ -397,7 +397,6 @@ function setupPostActions() {
   // TOC Toggle
   const tocBtn = document.getElementById('action-toc')
   const tocToggle = document.getElementById('toc-toggle') as HTMLInputElement | null
-  // Robustly find sidebar target (placeholder OR real sidebar if layout state differs)
   const sidebarTarget = (document.getElementById('left-sidebar-placeholder') || document.getElementById('left-sidebar')) as HTMLElement | null
   const mainContent = document.getElementById('main-content')
   const TOC_COLLAPSED_KEY = 'toc-collapsed'
@@ -429,11 +428,29 @@ function setupPostActions() {
         mainContent.classList.add('max-w-5xl', '2xl:max-w-6xl', '-ml-2')
       }
       else {
-        sidebarTarget.classList.add('w-16rem', '-ml-38')
-        sidebarTarget.classList.remove('w-8', '-ml-32')
+        // On ultra-wide screens, do not compress content even if TOC is expanded
+        // But still toggle the sidebar spacer to ensure consistency if needed?
+        // Actually, if we want "No Compression", we want the Layout to look like "Collapsed" (Wide Content)
+        // just with the TOC visible (fixed overlay).
+        const isUltraWide = window.innerWidth >= 1536
 
-        mainContent.classList.add('max-w-4xl')
-        mainContent.classList.remove('max-w-5xl', '2xl:max-w-6xl', '-ml-2')
+        if (isUltraWide) {
+          // Treat layout as 'Collapsed' (Expanded Content)
+          // But ensure we don't go TOO wide to overlap floating elements
+          sidebarTarget.classList.remove('w-16rem', '-ml-38')
+          sidebarTarget.classList.add('w-8', '-ml-32')
+
+          mainContent.classList.remove('max-w-4xl')
+          mainContent.classList.add('max-w-5xl', '2xl:max-w-6xl', '-ml-2')
+        }
+        else {
+          // Standard behavior for smaller screens
+          sidebarTarget.classList.add('w-16rem', '-ml-38')
+          sidebarTarget.classList.remove('w-8', '-ml-32')
+
+          mainContent.classList.add('max-w-4xl')
+          mainContent.classList.remove('max-w-5xl', '2xl:max-w-6xl', '-ml-2')
+        }
       }
     }
   }
