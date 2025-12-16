@@ -3,7 +3,7 @@
 
 <div
   id="post-action-sidebar"
-  class="fixed z-10 hidden flex-col gap-4 lg:bottom-20 lg:left-6 lg:top-auto min-[1920px]:left-[calc(50vw-44rem)] xl:left-[calc(50vw-33rem)] xl:top-1/2 lg:flex lg:translate-y-0 xl:-translate-y-1/2"
+  class="fixed z-10 hidden flex-col gap-4 lg:bottom-20 lg:left-2 lg:top-auto min-[1920px]:left-[max(0.5rem,calc(50vw-58rem))] xl:left-[max(0.5rem,calc(50vw-45rem))] xl:top-1/2 lg:flex lg:translate-y-0 xl:-translate-y-1/2"
 > <!-- TOC Toggle Button -->
   <button
     id="action-toc"
@@ -403,6 +403,7 @@ function setupPostActions() {
 
   const updateTOCState = () => {
     const isCollapsed = localStorage.getItem(TOC_COLLAPSED_KEY) === 'true'
+    const isLargeScreen = window.innerWidth >= 1920
 
     // 1. Button State
     if (isCollapsed) {
@@ -420,7 +421,8 @@ function setupPostActions() {
 
     // 2. Layout Manipulation
     if (sidebarTarget && mainContent) {
-      if (isCollapsed) {
+      // If collapsed OR large screen (TOC expands outwards), keep content wide
+      if (isCollapsed || isLargeScreen) {
         sidebarTarget.classList.remove('w-16rem', '-ml-38')
         sidebarTarget.classList.add('w-8', '-ml-32')
 
@@ -440,6 +442,14 @@ function setupPostActions() {
 
   // Initialize
   updateTOCState()
+
+  // Update on resize
+  window.addEventListener('resize', updateTOCState)
+
+  // Cleanup on page transition
+  document.addEventListener('astro:before-swap', () => {
+    window.removeEventListener('resize', updateTOCState)
+  }, { once: true })
 
   if (tocBtn) {
     tocBtn.addEventListener('click', () => {
