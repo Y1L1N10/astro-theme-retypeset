@@ -4,7 +4,6 @@ import { getCollection, render } from 'astro:content'
 import Comment from '@/components/Comment/Index.astro'
 import PostDate from '@/components/PostDate.astro'
 import TagList from '@/components/TagList.astro'
-import BackButton from '@/components/Widgets/BackButton.astro'
 import PostAction from '@/components/Widgets/PostAction.astro'
 import RelatedPosts from '@/components/Widgets/RelatedPosts.astro'
 import TOC from '@/components/Widgets/TOC.astro'
@@ -116,8 +115,6 @@ const allPosts = await getPosts(lang)
   <PostAction />
   <article class="heti" data-pagefind-body>
     <div class="relative">
-      <!-- Go Back Button On Desktop -->
-      <BackButton />
       <!-- Title -->
       <h1 class="post-title">
         <span

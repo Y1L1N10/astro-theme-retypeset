@@ -1,14 +1,19 @@
 ---
-import GoBackIcon from '@/assets/icons/go-back.svg';
+import GoBackIcon from '@/assets/icons/go-back.svg'
+
+const { class: className } = Astro.props
 ---
 
 <button
   id="back-button"
-  class="hidden"
-  lg="absolute left--10 top-3.8 block aspect-square w-4.5 c-secondary/40 transition-colors ease-out hover:c-secondary/80 active:scale-90!"
+  class:list={[
+    'group flex items-center justify-center rounded-lg p-2 transition-all duration-300 hover:bg-slate-100 dark:hover:bg-slate-800',
+    className,
+  ]}
   aria-label="Go back"
 >
   <GoBackIcon
+    class="h-5 w-5 c-secondary/40 transition-colors group-hover:c-secondary/80"
     aria-hidden="true"
     fill="currentColor"
   />
@@ -28,7 +33,8 @@ function handleBackButtonClick(e: MouseEvent) {
   const siteTitleLink = document.getElementById('site-title-link')
   if (siteTitleLink) {
     siteTitleLink.click()
-  } else {
+  }
+  else {
     window.location.href = '/'
   }
 }
