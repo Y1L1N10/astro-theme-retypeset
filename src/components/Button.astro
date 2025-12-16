@@ -157,7 +157,7 @@ if (!window.activityToggleInitialized) {
       return
 
     const updateState = () => {
-      const isHidden = localStorage.getItem(ACTIVITY_HIDDEN_KEY) === 'true'
+      const isHidden = localStorage.getItem(ACTIVITY_HIDDEN_KEY) !== 'false'
 
       // Update ALL buttons state
       toggleBtns.forEach((btn) => {
@@ -183,7 +183,7 @@ if (!window.activityToggleInitialized) {
     // Add listeners to ALL buttons
     toggleBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
-        const isHidden = localStorage.getItem(ACTIVITY_HIDDEN_KEY) === 'true'
+        const isHidden = localStorage.getItem(ACTIVITY_HIDDEN_KEY) !== 'false'
         localStorage.setItem(ACTIVITY_HIDDEN_KEY, (!isHidden).toString())
         updateState()
       })
