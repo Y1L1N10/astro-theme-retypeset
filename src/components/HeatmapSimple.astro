@@ -368,29 +368,21 @@ const currentLabels = statsLabelsMap[locale?.toLowerCase() || 'en'] || statsLabe
 </div>
 
 <script>
-// 动态调整 tooltip 位置，避免被遮挡
+// 动态调整 tooltip 位置
 function initTooltipPositioning() {
   const wrapper = document.querySelector('.heatmap-wrapper') as HTMLElement | null
-  if (!wrapper)
-    return
+  if (!wrapper) return
 
   const days = wrapper.querySelectorAll('.heatmap-day')
 
   days.forEach((day) => {
     const tooltip = day.querySelector('.heatmap-tooltip') as HTMLElement | null
-    if (!tooltip)
-      return
+    if (!tooltip) return
 
     day.addEventListener('mouseenter', () => {
-      // 重置偏移
       tooltip.style.removeProperty('--tooltip-offset-x')
-
       const dayRect = day.getBoundingClientRect()
-
-      // 获取视口宽度
       const viewportWidth = window.innerWidth
-
-      // 先让 tooltip 显示以获取宽度
       tooltip.style.opacity = '0'
       tooltip.style.visibility = 'visible'
       const tooltipRect = tooltip.getBoundingClientRect()
@@ -399,18 +391,13 @@ function initTooltipPositioning() {
 
       const tooltipHalfWidth = tooltipRect.width / 2
       const dayCenter = dayRect.left + dayRect.width / 2
-
-      // 计算 tooltip 居中后的左右边界
       const tooltipLeft = dayCenter - tooltipHalfWidth
       const tooltipRight = dayCenter + tooltipHalfWidth
 
-      // 如果会超出左边界，向右调整
       if (tooltipLeft < 0) {
-        const offset = -tooltipLeft + 10 // 10px 额外边距
+        const offset = -tooltipLeft + 10
         tooltip.style.setProperty('--tooltip-offset-x', `${offset}px`)
-      }
-      // 如果会超出右边界，向左调整
-      else if (tooltipRight > viewportWidth) {
+      } else if (tooltipRight > viewportWidth) {
         const offset = viewportWidth - tooltipRight - 10
         tooltip.style.setProperty('--tooltip-offset-x', `${offset}px`)
       }
@@ -423,13 +410,10 @@ function triggerHeatmapAnimation() {
   const days = document.querySelectorAll('.heatmap-day')
   days.forEach(day => {
     day.classList.remove('animate')
-    // 强制重绘 (Reflow) 以便重新触发动画
     void (day as HTMLElement).offsetWidth
     day.classList.add('animate')
   })
-
-  // 动画结束后移除类（可选，防止干扰）
-  // 最长延迟约 1.5s + 0.3s 动画 = 1.8s，这里给 2s 安全时间
+  
   setTimeout(() => {
     days.forEach(day => day.classList.remove('animate'))
   }, 4000)
@@ -439,21 +423,26 @@ function triggerHeatmapAnimation() {
 let themeObserver: MutationObserver | null = null
 
 function initThemeObserver() {
-  // 防止重复监听
   if (themeObserver) {
     themeObserver.disconnect()
   }
 
+  // 初始时不触发动画，只在后续变化时触发
+  let isInitializing = true 
+
   themeObserver = new MutationObserver((mutations) => {
+    if (isInitializing) {
+      isInitializing = false
+      return
+    }
+
     mutations.forEach((mutation) => {
       if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
         const oldClass = mutation.oldValue || ''
         const newClass = (mutation.target as HTMLElement).className || ''
-        
         const wasDark = oldClass.includes('dark')
         const isDark = newClass.includes('dark')
 
-        // 只有当 dark 类状态发生改变时才触发动画
         if (wasDark !== isDark) {
           triggerHeatmapAnimation()
         }
@@ -464,19 +453,19 @@ function initThemeObserver() {
   themeObserver.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ['class'],
-    attributeOldValue: true // 需要获取旧值来比较
+    attributeOldValue: true
   })
+  
+  // 稍微延迟一下标记初始化结束，避免立刻捕获到初始的类名变化（如果有的话）
+  setTimeout(() => { isInitializing = false }, 100)
 }
 
 // 初始化
-// initTooltipPositioning() // 移到 astro:page-load 中统一处理
-// initThemeObserver()      // 移到 astro:page-load 中统一处理
-
-// 处理动态内容加载和窗口大小变化
 document.addEventListener('astro:page-load', () => {
   initTooltipPositioning()
   initThemeObserver()
 })
+
 window.addEventListener('resize', initTooltipPositioning)
 </script>
 
