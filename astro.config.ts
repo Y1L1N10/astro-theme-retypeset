@@ -19,6 +19,8 @@ import { remarkContainerDirectives } from './src/plugins/remark-container-direct
 import { remarkLeafDirectives } from './src/plugins/remark-leaf-directives.mjs'
 import { remarkReadingTime } from './src/plugins/remark-reading-time.mjs'
 
+import react from '@astrojs/react';
+
 const { url: site } = themeConfig.site
 const { imageHostURL } = themeConfig.preload ?? {}
 const imageConfig = imageHostURL
@@ -41,25 +43,19 @@ export default defineConfig({
     })),
     defaultLocale,
   },
-  integrations: [
-    UnoCSS({
-      injectReset: true,
-    }),
-    mdx(),
-    partytown({
-      config: {
-        forward: ['dataLayer.push', 'gtag'],
-      },
-    }),
-    sitemap(),
-    Compress({
-      CSS: true,
-      HTML: true,
-      Image: false,
-      JavaScript: true,
-      SVG: false,
-    }),
-  ],
+  integrations: [UnoCSS({
+    injectReset: true,
+  }), mdx(), partytown({
+    config: {
+      forward: ['dataLayer.push', 'gtag'],
+    },
+  }), sitemap(), Compress({
+    CSS: true,
+    HTML: true,
+    Image: false,
+    JavaScript: true,
+    SVG: false,
+  }), react()],
   markdown: {
     remarkPlugins: [
       remarkDirective,

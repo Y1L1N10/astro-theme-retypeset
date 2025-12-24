@@ -3,6 +3,7 @@ import Button from '@/components/Button.astro'
 import Footer from '@/components/Footer.astro'
 import Header from '@/components/Header.astro'
 import Navbar from '@/components/Navbar.astro'
+import SpringyCursor from '@/components/React/SpringyCursor'
 import ActivityStream from '@/components/Widgets/ActivityStream.astro'
 import CodeCopyButton from '@/components/Widgets/CodeCopyButton.astro'
 import GithubCard from '@/components/Widgets/GithubCard.astro'
@@ -59,6 +60,7 @@ const MarginBottom = isPost && themeConfig.comment?.enabled
 >
   <Head {postTitle} {postDescription} {postSlug} />
   <body>
+    <SpringyCursor client:only="react" transition:persist transition:name="cursor-overlay" />
     <div
       id="app-container"
       class="mx-auto max-w-205.848 min-h-vh w-full min-h-dvh min-[1920px]:max-w-[min(90vw,2400px)]"
@@ -114,6 +116,7 @@ const MarginBottom = isPost && themeConfig.comment?.enabled
     <CodeCopyButton />
     <GithubCard />
     <MediaEmbed />
+
     <ImageZoom />
   </body>
 </html>
