@@ -85,7 +85,7 @@ const SpringyCursor: React.FC<SpringyCursorProps> = ({
       if (!canvas)
         return
       // Get the document zoom level
-      // @ts-expect-error - zoom property is non-standard but supported in Chrome
+
       const rootZoom = Number.parseFloat(window.getComputedStyle(document.documentElement).zoom) || 1
 
       // Inverse the zoom on the canvas to counteract the global zoom
