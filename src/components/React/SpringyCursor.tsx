@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { cn } from '@/utils/cn'
 
 interface SpringyCursorProps {
@@ -24,6 +24,22 @@ const SpringyCursor: React.FC<SpringyCursorProps> = ({
   wrapperElement,
   className,
 }) => {
+  const [isActive, setIsActive] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('springy-cursor-enabled') !== 'false'
+    }
+    return true
+  })
+
+  useEffect(() => {
+    const handleToggle = () => {
+      setIsActive(localStorage.getItem('springy-cursor-enabled') !== 'false')
+    }
+
+    window.addEventListener('springy-cursor-toggle', handleToggle)
+    return () => window.removeEventListener('springy-cursor-toggle', handleToggle)
+  }, [])
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const particlesRef = useRef<any[]>([])
   const cursorRef = useRef({ x: 0, y: 0 })
@@ -42,6 +58,9 @@ const SpringyCursor: React.FC<SpringyCursorProps> = ({
   const BOUNCE = 0.7
 
   useEffect(() => {
+    if (!isActive)
+      return
+
     const prefersReducedMotion = window.matchMedia(
       '(prefers-reduced-motion: reduce)',
     )
@@ -241,7 +260,10 @@ const SpringyCursor: React.FC<SpringyCursorProps> = ({
       window.removeEventListener('resize', onWindowResize)
       document.removeEventListener('astro:page-load', onWindowResize)
     }
-  }, [emoji, wrapperElement])
+  }, [emoji, wrapperElement, isActive])
+
+  if (!isActive)
+    return null
 
   const style: React.CSSProperties = {
     position: 'fixed',

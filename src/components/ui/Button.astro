@@ -1,6 +1,5 @@
 ---
 import LanguageSwitcherIcon from '@/assets/icons/language-switcher.svg'
-import ThemeToggleIcon from '@/assets/icons/theme-toggle.svg'
 import { moreLocales, themeConfig } from '@/config'
 import { getNextGlobalLangPath, getNextSupportedLangPath } from '@/i18n/path'
 
@@ -62,10 +61,40 @@ const nextUrl = supportedLangs.length > 0
     class="theme-toggle-button aspect-square w-4 c-secondary active:scale-90 hover:c-primary"
     aria-label="Switch light/dark theme"
   >
-    <ThemeToggleIcon
-      aria-hidden="true"
-      fill="currentColor"
-    />
+    <div class="hidden dark:block">
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2" />
+        <path d="M12 20v2" />
+        <path d="M4.93 4.93l1.41 1.41" />
+        <path d="M17.66 17.66l1.41 1.41" />
+        <path d="M2 12h2" />
+        <path d="M20 12h2" />
+        <path d="M6.34 17.66l-1.41 1.41" />
+        <path d="M19.07 4.93l-1.41 1.41" />
+      </svg>
+    </div>
+    <div class="block dark:hidden">
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+      </svg>
+    </div>
+  </button>
+
+  <!-- Springy Cursor Toggle -->
+  <button
+    class="springy-cursor-toggle-button aspect-square w-4 c-secondary active:scale-90 hover:c-primary"
+    aria-label="Toggle springy cursor"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7l4.76 3.45l-1.76 5.55h-6l-1.76 -5.55z" />
+      <path d="M12 7v-4" />
+      <path d="M15 13l3.4 3.4" />
+      <path d="M9 13l-3.4 3.4" />
+      <path d="M16.76 10.45l3.24 -1.45" />
+      <path d="M7.24 10.45l-3.24 -1.45" />
+    </svg>
   </button>
 </div>
 
@@ -195,5 +224,42 @@ if (!window.activityToggleInitialized) {
 
   // Run on view transitions
   document.addEventListener('astro:after-swap', setupActivityToggle)
+}
+
+// Springy Cursor Toggle Logic
+if (!window.springyCursorToggleInitialized) {
+  window.springyCursorToggleInitialized = true
+
+  function setupSpringyCursorToggle() {
+    const toggleBtns = document.querySelectorAll('.springy-cursor-toggle-button')
+    const STORAGE_KEY = 'springy-cursor-enabled'
+
+    if (toggleBtns.length === 0)
+      return
+
+    const updateState = () => {
+      const isEnabled = localStorage.getItem(STORAGE_KEY) !== 'false'
+      toggleBtns.forEach((btn) => {
+        btn.classList.toggle('opacity-50', !isEnabled)
+      })
+    }
+
+    // Initial Check
+    updateState()
+
+    // Add listeners to ALL buttons
+    toggleBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const isEnabled = localStorage.getItem(STORAGE_KEY) !== 'false'
+        localStorage.setItem(STORAGE_KEY, (!isEnabled).toString())
+        const event = new Event('springy-cursor-toggle')
+        window.dispatchEvent(event)
+        updateState()
+      })
+    })
+  }
+
+  setupSpringyCursorToggle()
+  document.addEventListener('astro:after-swap', setupSpringyCursorToggle)
 }
 </script>
