@@ -93,6 +93,32 @@ pnpm run dev
 - [ ] 文章详情页正常显示
 - [ ] 目录（TOC）正确生成（如果启用）
 
+#### 步骤 3：构建验证
+
+```bash
+npm run build
+# 或
+pnpm run build
+```
+
+确认构建成功，无错误信息。
+
+### 5. 使用验证脚本（推荐）
+
+本 Skill 提供了自动化验证脚本，可以快速检查文章格式和构建状态。
+
+#### 文章格式验证
+
+使用 `validate_post.py` 自动检查文章的元数据和内容格式：
+
+```bash
+# 验证单个文件
+python .agent/skills/PostBlog/validate_post.py src/content/posts/my-article.md
+
+# 验证多个文件
+python .agent/skills/PostBlog/validate_post.py src/content/posts/*.md
+```
+
 ## 快速检查清单
 
 发布前最后检查：
