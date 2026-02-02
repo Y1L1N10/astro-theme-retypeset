@@ -158,15 +158,22 @@ class PostValidator:
     
     def _validate_h1_title(self):
         """验证 H1 标题 (有且只有一个)"""
+        # 移除代码块，避免误判代码中的注释为 H1
+        # 移除 fenced code blocks (```...```)
+        temp_body = re.sub(r'```.*?```', '', self.body, flags=re.DOTALL)
+        # 移除 inline code (`...`)
+        temp_body = re.sub(r'`.*?`', '', temp_body)
+        
         # 查找所有 H1 标题 (# 开头，但不是 ## 或更多)
         h1_pattern = r'^# [^#].*$'
-        h1_titles = re.findall(h1_pattern, self.body, re.MULTILINE)
+        h1_titles = re.findall(h1_pattern, temp_body, re.MULTILINE)
         
         if len(h1_titles) == 0:
             self.errors.append("文章缺少 H1 标题 (# 标题)")
         elif len(h1_titles) > 1:
             self.errors.append(
-                f"文章包含多个 H1 标题 ({len(h1_titles)} 个)，应该只有一个"
+                f"文章包含多个 H1 标题 ({len(h1_titles)} 个)，应该只有一个: " + 
+                ", ".join(h1_titles)
             )
     
     def _validate_file_location(self):

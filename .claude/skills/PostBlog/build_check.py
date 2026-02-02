@@ -49,19 +49,39 @@ class BuildValidator:
         """检查项目结构"""
         print("📁 检查项目结构...")
         
-        required_files = [
-            'package.json',
-            'astro.config.mjs',
-            'src/content/posts'
-        ]
+        required_dirs = ['src/content/posts']
+        required_files = ['package.json']
+        config_files = ['astro.config.mjs', 'astro.config.ts']
         
+        # 检查必需目录
+        for dir_path in required_dirs:
+            path = self.project_root / dir_path
+            if not path.exists():
+                self.errors.append(f"缺少必需目录: {dir_path}")
+                print(f"  ❌ {dir_path}")
+            else:
+                print(f"  ✅ {dir_path}")
+                
+        # 检查必需文件
         for file_path in required_files:
             path = self.project_root / file_path
             if not path.exists():
-                self.errors.append(f"缺少必需文件/目录: {file_path}")
+                self.errors.append(f"缺少必需文件: {file_path}")
                 print(f"  ❌ {file_path}")
             else:
                 print(f"  ✅ {file_path}")
+                
+        # 检查配置文件 (两者居一即可)
+        config_found = False
+        for config_file in config_files:
+            if (self.project_root / config_file).exists():
+                print(f"  ✅ {config_file}")
+                config_found = True
+                break
+        
+        if not config_found:
+            self.errors.append("缺少 Astro 配置文件 (astro.config.mjs 或 astro.config.ts)")
+            print("  ❌ astro.config.mjs/ts")
         
         print()
         return len(self.errors) == 0
