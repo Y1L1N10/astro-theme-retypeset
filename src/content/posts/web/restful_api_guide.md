@@ -5,6 +5,7 @@ description: 全面的 RESTful API 设计指南，涵盖核心原则、HTTP 方�
 tags: [API, RESTful, HTTP, 后端开发, 架构设计]
 lang: ''
 toc: true
+abbrlink: restful-api-guide
 ---
 
 # RESTful API 完整指南

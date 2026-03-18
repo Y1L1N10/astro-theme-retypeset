@@ -5,6 +5,7 @@ description: Web 开发必备的 HTTP 状态码速查表，涵盖常用 Top 10 �
 tags: [HTTP, Web开发, API, 状态码, 速查表]
 lang: ''
 toc: true
+abbrlink: http-status-codes
 ---
 
 # HTTP 状态码完整速查表

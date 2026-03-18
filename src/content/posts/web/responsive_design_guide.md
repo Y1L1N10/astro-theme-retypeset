@@ -5,6 +5,7 @@ description: 全面的网页响应式设计指南，包含断点设置、CSS 媒
 tags: [CSS, 响应式设计, Web开发, 移动优先, 布局]
 lang: ''
 toc: true
+abbrlink: responsive-design-guide
 ---
 
 # 网页响应式设计适配规则

@@ -5,6 +5,7 @@ description: 汇总 Swift 语言核心官方资源，涵盖文档、教程、工
 tags: [Swift, iOS, 学习资源, 官方文档, 编程入门]
 lang: ''
 toc: true
+abbrlink: xcode-copilot-guide
 ---
 
 ## 🚀 安装配置

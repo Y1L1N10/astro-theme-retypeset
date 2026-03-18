@@ -5,6 +5,7 @@ description: 深入理解 Swift 闭包的使用方法
 tags: [Swift, iOS, 闭包, 编程基础]
 lang: ''
 toc: true
+abbrlink: swift-closures
 ---
 
 ## 第一阶段：基础入门

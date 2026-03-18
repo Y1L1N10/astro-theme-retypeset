@@ -5,6 +5,7 @@ description: 全面的 curl 命令使用指南，包含基本用法、HTTP 方�
 tags: [curl, HTTP, API, 命令行, 网络工具]
 lang: ''
 toc: true
+abbrlink: curl-command-guide
 ---
 
 # curl 常用指令总结

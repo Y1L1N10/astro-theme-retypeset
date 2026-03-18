@@ -5,6 +5,7 @@ description: 深入理解 Swift 函数泛型的使用方法
 tags: [Swift, iOS, 函数, 参数, 编程基础]
 lang: ''
 toc: true
+abbrlink: swift-generic
 ---
 
 # Swift 函数泛型
